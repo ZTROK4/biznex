@@ -46,7 +46,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: process.env.NODE_ENV === 'production', // true on production (HTTPS)
+        secure: true, // true on production (HTTPS)
         httpOnly: true, // Prevent client-side JS access
         sameSite: 'None', // Allows cross-site cookies (OAuth needs this)
         maxAge: 24 * 60 * 60 * 1000 // 1 day
