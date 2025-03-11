@@ -35,7 +35,7 @@ const transporter = nodemailer.createTransport({
 // Helper: Generate a 6-digit OTP
 const generateOTP = () => crypto.randomInt(100000, 999999).toString();
 
-// 📧 1. Send Email OTP
+//  1. Send Email OTP
 router.post("/send-email-otp", async (req, res) => {
   const { email} = req.body;
   if (!email) return res.status(400).json({ error: "Email is required" });
@@ -79,7 +79,7 @@ router.post("/send-email-otp", async (req, res) => {
   
 });
 
-// 📲 2. Send Phone OTP
+//  2. Send Phone OTP
 
 router.post("/send-phone-otp", async (req, res) => {
   const { email, phone } = req.body;
@@ -122,7 +122,7 @@ router.post("/send-phone-otp", async (req, res) => {
 });
 
 
-// ✅ 3. Verify Email OTP
+//  3. Verify Email OTP
 router.post("/verify-email-otp", async (req, res) => {
   const { email, emailOtp } = req.body;
   if (!email || !emailOtp) return res.status(400).json({ error: "Email and OTP are required." });
@@ -148,7 +148,7 @@ router.post("/verify-email-otp", async (req, res) => {
   }
 });
 
-// ✅ 4. Verify Phone OTP
+//  4. Verify Phone OTP
 router.post("/verify-phone-otp", async (req, res) => {
   const { email, phoneOtp } = req.body;
   if (!email || !phoneOtp) return res.status(400).json({ error: "Email and phone OTP are required." });
@@ -205,7 +205,7 @@ router.post('/create-client', async (req, res) => {
     
     if(is_email_verified && is_phone_verified){
         const userResult = await masterPool.query(
-            'INSERT INTO clients (client_name,owner_name, email,address,business_category,status, password_hash,ph_no) VALUES ($1, $2, $3) RETURNING id;',
+            'INSERT INTO clients (client_name,owner_name, email,address,business_category,status, password_hash,ph_no) VALUES ($1, $2, $3) RETURNING client_id;',
             [username,ownername, email, address, business_category,'Active',hpassword,phone]
           );
       
