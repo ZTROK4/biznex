@@ -104,28 +104,28 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser((obj, done) => done(null, obj));
 
 // Google Auth Routes
-app.get('/auth/google/client', passport.authenticate('google-client', { scope: ['profile', 'email'] }));
-app.get('/auth/google/job_user', passport.authenticate('google-job_user', { scope: ['profile', 'email'] }));
-app.get('/auth/google/market_user', passport.authenticate('google-market_user', { scope: ['profile', 'email'] }));
+router.get('/auth/google/client', passport.authenticate('google-client', { scope: ['profile', 'email'] }));
+router.get('/auth/google/job_user', passport.authenticate('google-job_user', { scope: ['profile', 'email'] }));
+router.get('/auth/google/market_user', passport.authenticate('google-market_user', { scope: ['profile', 'email'] }));
 
 // Google Callback Routes
-app.get('/auth/google/client/callback',
+router.get('/auth/google/client/callback',
     passport.authenticate('google-client', { failureRedirect: '/access-denied' }),
     (req, res) => res.redirect('/dashboard')
 );
 
-app.get('/auth/google/job_user/callback',
+router.get('/auth/google/job_user/callback',
     passport.authenticate('google-job_user', { failureRedirect: '/access-denied' }),
     (req, res) => res.redirect('/vendor/dashboard')
 );
 
-app.get('/auth/google/market_user/callback',
+router.get('/auth/google/market_user/callback',
     passport.authenticate('google-market_user', { failureRedirect: '/access-denied' }),
     (req, res) => res.redirect('/customer/dashboard')
 );
 
 // Check session data
-app.get('/session-data', (req, res) => {
+router.get('/session-data', (req, res) => {
     if (req.isAuthenticated()) {
         res.json({
             id: req.user.id,
@@ -139,7 +139,7 @@ app.get('/session-data', (req, res) => {
 });
 
 // Improved logout to handle different session cookies
-app.get('/logout', (req, res, next) => {
+router.get('/logout', (req, res, next) => {
     if (!req.isAuthenticated()) return res.redirect('/');
 
     req.logout((err) => {
