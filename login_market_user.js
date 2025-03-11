@@ -44,6 +44,10 @@ router.post("/login-market-user", async (req, res, next) => {
     // Start session
     req.login(user, (err) => {
       if (err) return next(err);
+      req.session.userId = user.market_user_id || user.id;
+      req.session.email = user.email;
+      req.session.dbname = null;
+      req.session.userType = 'market_user';
       return res.status(200).json({ message: 'Market user login successful' });
     });
 

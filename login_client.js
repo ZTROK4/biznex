@@ -47,7 +47,11 @@ router.post("/login-client", async (req, res, next) => {
 
     // Start session
     req.login(user, (err) => {
-      if (err) return next(err);n
+      if (err) return next(err);
+      req.session.userId = user.client_id || user.id;
+      req.session.email = user.email;
+      req.session.dbname = user.db_name;
+      req.session.userType = 'client';
       return res.status(200).json({ message: 'Login successful' });
     });
 

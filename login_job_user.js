@@ -62,6 +62,10 @@ router.post("/login-job-user", async (req, res, next) => {
         console.error("Session error:", err);
         return res.status(500).json({ error: "Session creation failed" });
       }
+      req.session.userId = user.job_user_id || user.id;
+      req.session.email = user.email;
+      req.session.dbname = null;
+      req.session.userType = 'job_user';
       return res.status(200).json({ message: 'Login successful', user: { id: user.id, email: user.email } });
     });
 
