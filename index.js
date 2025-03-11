@@ -6,11 +6,11 @@ const dotenv = require('dotenv');
 const pool = require('./master_db'); // PostgreSQL connection
 const authRoutes = require('./auth');
 const signupRoutes = require('./signup_client');
-const signupJobuser=require('./signup_job_user');
-const signupMarketuser=require('./signup_market_user');
-const loginClient=require('./login_client');
-const loginJobuser=require('./login_job_user');
-const loginMarketuser=require('./login_market_user');
+const signupJobuser = require('./signup_job_user');
+const signupMarketuser = require('./signup_market_user');
+const loginClient = require('./login_client');
+const loginJobuser = require('./login_job_user');
+const loginMarketuser = require('./login_market_user');
 
 dotenv.config();
 const app = express();
@@ -21,6 +21,7 @@ const allowedOrigins = [
     'https://yourfrontend.com'        // Production client
 ];
 
+// ✅ Unified CORS configuration
 app.use(cors({
     origin: (origin, callback) => {
         if (!origin || allowedOrigins.includes(origin)) {
@@ -30,37 +31,33 @@ app.use(cors({
         }
     },
     credentials: true, // Allow cookies/session sharing
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type']
 }));
 
-app.use(
-    cors({
-        origin:'http://127.0.0.1:5500',
-        methods:['GET','POST','PUT','DELETE'],
-        allowedHeaders:['Content-Type']
-    })
-)
-
-// Middleware for express-session
+// ✅ Middleware for express-session
 app.use(session({
     secret: process.env.SESSION_SECRET || 'cats',
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: true, // true on production (HTTPS)
-        httpOnly: true, // Prevent client-side JS access
-        sameSite: 'None', // Allows cross-site cookies (OAuth needs this)
+        secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+        httpOnly: true, // Prevents XSS attacks
+        sameSite: 'None', // Needed for cross-site cookies (OAuth)
         maxAge: 24 * 60 * 60 * 1000 // 1 day
     }
 }));
 
+// ✅ Middleware
 app.use(express.json());
 app.use('/signup/client', signupRoutes);
 app.use('/signup/job-user', signupJobuser);
 app.use('/signup/market-user', signupMarketuser);
-app.use('/login/client',loginClient);
-app.use('/login/job-user',loginJobuser);
-app.use('/login/market-user',loginMarketuser);
-// Initialize Passport
+app.use('/login/client', loginClient);
+app.use('/login/job-user', loginJobuser);
+app.use('/login/market-user', loginMarketuser);
+
+// ✅ Passport Initialization
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -109,22 +106,19 @@ const createGoogleStrategy = (userType) => {
     });
 };
 
-// Register strategies
+// ✅ Register strategies
 passport.use('google-client', createGoogleStrategy('client'));
 passport.use('google-job_user', createGoogleStrategy('job_user'));
 passport.use('google-market_user', createGoogleStrategy('market_user'));
 
-// Passport session handling
-passport.serializeUser((user, done) => {
-    done(null, user);
-});
-
+// ✅ Passport session handling
+passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((obj, done) => done(null, obj));
 
-// Use the auth router
+// ✅ Use the auth router
 app.use('/auth', authRoutes);
 
-// Start server
+// ✅ Start server
 app.listen(PORT, () => {
     console.log(`✅ Server running on https://biznex.onrender.com`);
 });
