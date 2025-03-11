@@ -3,6 +3,8 @@ const express = require('express');
 const { Pool } = require('pg');
 require('dotenv').config();
 const nodemailer = require("nodemailer");
+const router = express.Router();
+const bcrypt = require('bcrypt');
 const twilio = require('twilio');
 const client = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const crypto = require("crypto");
@@ -19,7 +21,7 @@ const masterPool = new Pool({
   });
 
 // Middleware to parse JSON
-app.use(express.json());
+router.use(express.json());
 
 
 
@@ -35,7 +37,7 @@ const transporter = nodemailer.createTransport({
 const generateOTP = () => crypto.randomInt(100000, 999999).toString();
 
 // 📧 1. Send Email OTP
-app.post("/send-email-otp-job-user", async (req, res) => {
+router.post("/send-email-otp-job-user", async (req, res) => {
   const { email} = req.body;
   if (!email) return res.status(400).json({ error: "Email is required" });
 
@@ -80,7 +82,7 @@ app.post("/send-email-otp-job-user", async (req, res) => {
 
 // 📲 2. Send Phone OTP
 
-app.post("/send-phone-otp-job-user", async (req, res) => {
+router.post("/send-phone-otp-job-user", async (req, res) => {
     const { email, phone } = req.body;
     if (!email || !phone) return res.status(400).json({ error: "Email and phone are required" });
   
@@ -122,7 +124,7 @@ app.post("/send-phone-otp-job-user", async (req, res) => {
   
 
 // ✅ 3. Verify Email OTP
-app.post("/verify-email-otp-job-user", async (req, res) => {
+router.post("/verify-email-otp-job-user", async (req, res) => {
   const { email, emailOtp } = req.body;
   if (!email || !emailOtp) return res.status(400).json({ error: "Email and OTP are required." });
 
@@ -148,7 +150,7 @@ app.post("/verify-email-otp-job-user", async (req, res) => {
 });
 
 // ✅ 4. Verify Phone OTP
-app.post("/verify-phone-otp-job-user", async (req, res) => {
+router.post("/verify-phone-otp-job-user", async (req, res) => {
   const { email, phoneOtp } = req.body;
   if (!email || !phoneOtp) return res.status(400).json({ error: "Email and phone OTP are required." });
 
@@ -186,7 +188,7 @@ async function hashPassword(password) {
   }
 
 // Create a new database for each user
-app.post('/create-job-user', async (req, res) => {
+router.post('/create-job-user', async (req, res) => {
   const { username,email,address,dob,phone, password } = req.body;
   if (!username || !email || !password) {
     return res.status(400).json({ error: 'Missing required fields' });
@@ -223,6 +225,5 @@ app.post('/create-job-user', async (req, res) => {
     }
 });
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+module.exports = router;
+

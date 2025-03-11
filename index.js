@@ -5,6 +5,9 @@ const dotenv = require('dotenv');
 const pool = require('./master_db'); // PostgreSQL connection
 const authRoutes = require('./auth');
 const signupRoutes = require('./signup_client');
+const signupJobuser=require('./signup_job_user');
+const signupMarketuser=require('./signup_market_user');
+
 dotenv.config();
 const app = express();
 const PORT = 5000;
@@ -18,6 +21,8 @@ app.use(session({
 }));
 app.use(express.json());
 app.use('/signup-client', signupRoutes);
+app.use('/signup-job-user', signupJobuser);
+app.use('/signup-market-user', signupMarketuser);
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
