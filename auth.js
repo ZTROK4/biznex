@@ -1,7 +1,11 @@
 const express = require('express');
 const passport = require('passport');
 const router = express.Router();
-
+const cors = require('cors');
+router.use(cors({
+    origin: '*',       // Allows all origins (Use carefully!)
+    credentials: true, // Allows cookies and sessions
+}));
 // Google Auth Routes
 router.get('/google/client', passport.authenticate('google-client', { scope: ['profile', 'email'] }));
 router.get('/google/job_user', passport.authenticate('google-job_user', { scope: ['profile', 'email'] }));
