@@ -9,7 +9,7 @@ const twilio = require('twilio');
 const client = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const crypto = require("crypto");
 const port = 5000;
-
+const cors = require('cors');
 // Master database connection
 const masterPool = new Pool({
     user: process.env.DB_USER,
@@ -22,7 +22,7 @@ const masterPool = new Pool({
 // Middleware to parse JSON
 router.use(express.json());
 
-
+router.use(cors());
 
 const transporter = nodemailer.createTransport({
   service: "Gmail",

@@ -5,7 +5,7 @@ const router = express.Router();
 const passport = require('passport');
 const masterPool = require('./master_db');
 const router = require('./auth');
-
+const cors = require('cors');
 router.use(express.json());
 
 // Session middleware
@@ -15,7 +15,7 @@ router.use(session({
   saveUninitialized: false,
   cookie: { secure: false } // Set to true if using HTTPS
 }));
-
+router.use(cors());
 router.use(passport.initialize());
 router.use(passport.session());
 

@@ -1,5 +1,6 @@
 const express = require('express');
 const passport = require('passport');
+const cors = require('cors');
 const session = require('express-session');
 const dotenv = require('dotenv');
 const pool = require('./master_db'); // PostgreSQL connection
@@ -32,7 +33,7 @@ app.use('/login/market-user',loginMarketuser);
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
-
+router.use(cors());
 // Google OAuth Strategy - Dynamic Callback
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 

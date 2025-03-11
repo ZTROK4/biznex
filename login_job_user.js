@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const router = express.Router();
 const passport = require('passport');
 const masterPool = require('./master_db');
-
+const cors = require('cors');
 router.use(express.json());
 
 // Session middleware
@@ -17,7 +17,7 @@ router.use(session({
 
 router.use(passport.initialize());
 router.use(passport.session());
-
+router.use(cors());
 // Passport serialization
 passport.serializeUser((user, done) => {
   done(null, user.id); // Store user ID in session
