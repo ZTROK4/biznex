@@ -15,7 +15,7 @@ const loginMarketuser=require('./login_market_user');
 dotenv.config();
 const app = express();
 const PORT = 5000;
-
+app.use(cors());
 // Middleware for express-session
 app.use(session({
     secret: process.env.SESSION_SECRET || 'cats',
@@ -33,7 +33,7 @@ app.use('/login/market-user',loginMarketuser);
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(cors());
+
 // Google OAuth Strategy - Dynamic Callback
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
