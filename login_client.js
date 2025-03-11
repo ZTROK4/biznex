@@ -65,7 +65,7 @@ function isAuthenticated(req, res, next) {
 }
 
 // Example protected route
-route.get('/dashboard', isAuthenticated, (req, res) => {
+router.get('/dashboard', isAuthenticated, (req, res) => {
   res.json({ message: `Welcome ${req.user.email}` });
 });
 
