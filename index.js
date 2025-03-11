@@ -37,7 +37,7 @@ const createGoogleStrategy = (userType) => {
     return new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: `http://localhost:5000/auth/google/${userType}/callback`,
+        callbackURL: `https://biznex.onrender.com/auth/google/${userType}/callback`,
     }, async (accessToken, refreshToken, profile, done) => {
         try {
             const email = profile.emails[0].value;
