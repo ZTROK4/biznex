@@ -102,7 +102,7 @@ router.post("/send-phone-otp", async (req, res) => {
     // Update phone OTP
     await masterPool.query(
       `UPDATE client_verifications SET phone_otp = $1, expires_at = $2, phone= $3 ,is_phone_verified = FALSE 
-       WHERE email = $3 ;`,
+       WHERE email = $4 ;`,
       [phoneOtp, expiresAt, phone, email]
     );
 
