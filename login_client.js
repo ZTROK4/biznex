@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const router = express.Router();
 const passport = require('passport');
 const masterPool = require('./master_db');
-const cors = require('cors');
+//const cors = require('cors');
 
 
 
@@ -18,7 +18,7 @@ router.use(session({
   cookie: { secure: false } // Set to true if using HTTPS
 }));
 
-router.use(cors());
+//router.use(cors());
 router.use(passport.initialize());
 router.use(passport.session());
 

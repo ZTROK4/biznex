@@ -15,7 +15,12 @@ const loginMarketuser=require('./login_market_user');
 dotenv.config();
 const app = express();
 const PORT = 5000;
-app.use(cors());
+
+app.use(cors({
+    origin: '*',       // Allows all origins (Use carefully!)
+    credentials: true, // Allows cookies and sessions
+}));
+
 // Middleware for express-session
 app.use(session({
     secret: process.env.SESSION_SECRET || 'cats',
