@@ -33,7 +33,7 @@ app.use('/login/market-user',loginMarketuser);
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
-router.use(cors());
+app.use(cors());
 // Google OAuth Strategy - Dynamic Callback
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
