@@ -205,7 +205,7 @@ router.post('/create-client', async (req, res) => {
     
     if(is_email_verified && is_phone_verified){
         const userResult = await masterPool.query(
-            'INSERT INTO clients (client_name,owner_name, email,address,business_category,status, password_hash,ph_no) VALUES ($1, $2, $3,$4,$5,$6,$7,$8s) RETURNING client_id;',
+            'INSERT INTO clients (client_name,owner_name, email,address,business_category,status, password_hash,ph_no) VALUES ($1, $2, $3,$4,$5,$6,$7,$8) RETURNING client_id;',
             [username,ownername, email, address, business_category,'Active',hpassword,phone]
           );
       
@@ -363,7 +363,11 @@ router.post('/create-client', async (req, res) => {
           }
           else
           {
-            console.error('Email or phone not verified:', err);
+            
+              console.error('Email or phone not verified.');
+              return res.status(400).json({ error: 'Email or phone not verified.' });
+          
+            
           }
         } 
         catch (err) {
