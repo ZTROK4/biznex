@@ -8,17 +8,17 @@ router.get('/google/job_user', passport.authenticate('google-job_user', { scope:
 router.get('/google/market_user', passport.authenticate('google-market_user', { scope: ['profile', 'email'] }));
 
 // Google Callback Routes
-router.get('/google/client/callback',
+router.get('/auth/google/client/callback',
     passport.authenticate('google-client', { failureRedirect: '/access-denied' }),
     (req, res) => res.redirect('/dashboard')
 );
 
-router.get('/google/job_user/callback',
+router.get('/auth/google/job_user/callback',
     passport.authenticate('google-job_user', { failureRedirect: '/access-denied' }),
     (req, res) => res.redirect('/vendor/dashboard')
 );
 
-router.get('/google/market_user/callback',
+router.get('/auth/google/market_user/callback',
     passport.authenticate('google-market_user', { failureRedirect: '/access-denied' }),
     (req, res) => res.redirect('/customer/dashboard')
 );
