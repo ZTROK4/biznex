@@ -3,7 +3,7 @@ const passport = require('passport');
 const session = require('express-session');
 const dotenv = require('dotenv');
 const pool = require('./master_db'); // PostgreSQL connection
-const authRoutes = require('./auth'); // Import the fixed router
+const authRoutes = require('./auth');
 
 dotenv.config();
 const app = express();
@@ -11,21 +11,11 @@ const PORT = 5000;
 
 // Middleware for express-session
 app.use(session({
-    secret: 'cats',  // Use a secure, random string
+    secret: process.env.SESSION_SECRET || 'cats',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 1 day
+    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
 }));
-
-// Separate session instances for each user type
-const clientSession = session({ secret: 'client_secret', resave: false, saveUninitialized: false, name: 'client.sid' });
-const jobUserSession = session({ secret: 'job_user_secret', resave: false, saveUninitialized: false, name: 'jobuser.sid' });
-const marketUserSession = session({ secret: 'market_user_secret', resave: false, saveUninitialized: false, name: 'marketuser.sid' });
-
-// Apply sessions dynamically
-app.use('/auth/google/client', clientSession);
-app.use('/auth/google/job_user', jobUserSession);
-app.use('/auth/google/market_user', marketUserSession);
 
 // Initialize Passport
 app.use(passport.initialize());
@@ -33,26 +23,35 @@ app.use(passport.session());
 
 // Google OAuth Strategy - Dynamic Callback
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+
 const createGoogleStrategy = (userType) => {
     return new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: `https://biznex.onrender.com/google/${userType}/callback`,
+        callbackURL: `https://biznex.onrender.com/auth/google/${userType}/callback`,
     }, async (accessToken, refreshToken, profile, done) => {
         try {
             const email = profile.emails[0].value;
+            let userQuery = '';
 
-            let user;
-            if (userType === 'client') {
-                user = await pool.query('SELECT * FROM clients WHERE email = $1', [email]);
-            } else if (userType === 'job_user') {
-                user = await pool.query('SELECT * FROM job_user WHERE email = $1', [email]);
-            } else if (userType === 'market_user') {
-                user = await pool.query('SELECT * FROM market_user WHERE email = $1', [email]);
+            switch (userType) {
+                case 'client':
+                    userQuery = 'SELECT * FROM clients WHERE email = $1';
+                    break;
+                case 'job_user':
+                    userQuery = 'SELECT * FROM job_user WHERE email = $1';
+                    break;
+                case 'market_user':
+                    userQuery = 'SELECT * FROM market_user WHERE email = $1';
+                    break;
+                default:
+                    return done(null, false, { message: 'Invalid user type' });
             }
 
+            const user = await pool.query(userQuery, [email]);
+
             if (user.rows.length > 0) {
-                return done(null, { 
+                return done(null, {
                     id: user.rows[0].client_id || user.rows[0].id,
                     email: user.rows[0].email,
                     dbname: userType === 'client' ? user.rows[0].db_name : null,
@@ -74,20 +73,15 @@ passport.use('google-market_user', createGoogleStrategy('market_user'));
 
 // Passport session handling
 passport.serializeUser((user, done) => {
-    done(null, {
-        id: user.id,
-        dbname: user.dbname,
-        email: user.email,
-        userType: user.userType
-    });
+    done(null, user);
 });
 
 passport.deserializeUser((obj, done) => done(null, obj));
 
 // Use the auth router
-app.use('/', authRoutes); // ✅ Properly register the router
+app.use('/auth', authRoutes);
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`✅ Server running on https://biznex.onrender.com`);
 });
