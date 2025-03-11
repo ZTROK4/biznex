@@ -217,7 +217,7 @@ router.post('/create-client', async (req, res) => {
       
           const dbUpdateResult = await masterPool.query(
           'UPDATE clients SET db_name = $1 WHERE client_id = $2 RETURNING *;',
-          [dbName, userId]
+          [dbName, user_id]
           );
       
           if (userResult.rowCount === 0) {
