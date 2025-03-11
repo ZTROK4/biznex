@@ -210,7 +210,7 @@ router.post('/create-market-user', async (req, res) => {
       
         const userId = userResult.rows[0].id;
 
-        res.redirect('/market_user_login');
+        res.status(200).json({ message: 'SignUp successfull'});
 
     }
     else{
