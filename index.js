@@ -32,6 +32,14 @@ app.use(cors({
     credentials: true, // Allow cookies/session sharing
 }));
 
+app.use(
+    cors({
+        origin:'http://127.0.0.1:5500',
+        methods:['GET','POST','PUT','DELETE'],
+        allowedHeaders:['Content-Type']
+    })
+)
+
 // Middleware for express-session
 app.use(session({
     secret: process.env.SESSION_SECRET || 'cats',
