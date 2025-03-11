@@ -101,9 +101,9 @@ router.post("/send-phone-otp", async (req, res) => {
 
     // Update phone OTP
     await masterPool.query(
-      `UPDATE client_verifications SET phone_otp = $1, expires_at = $2, is_phone_verified = FALSE 
-       WHERE email = $3 AND phone = $4;`,
-      [phoneOtp, expiresAt, email, phone]
+      `UPDATE client_verifications SET phone_otp = $1, expires_at = $2, phone= $3 ,is_phone_verified = FALSE 
+       WHERE email = $3 ;`,
+      [phoneOtp, expiresAt, phone, email]
     );
 
     // Send OTP using Twilio (replace with your provider if needed)
