@@ -17,7 +17,7 @@ app.use(session({
     cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
 }));
 app.use(express.json());
-app.use('/api', signupRoutes);
+app.use('/signup-client', signupRoutes);
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
