@@ -10,19 +10,21 @@ router.get('/google/market_user', passport.authenticate('google-market_user', { 
 // Google Callback Routes
 router.get('/google/client/callback',
     passport.authenticate('google-client', { failureRedirect: '/access-denied' }),
-    (req, res) => res.redirect('/dashboard')
+    (req, res) => res.status(200).json({ message: "Authentication successful" })
 );
 
 router.get('/google/job_user/callback',
     passport.authenticate('google-job_user', { failureRedirect: '/access-denied' }),
-    (req, res) => res.redirect('/vendor/dashboard')
+    (req, res) => res.status(200).json({ message: "Authentication successful" })
 );
 
 router.get('/google/market_user/callback',
     passport.authenticate('google-market_user', { failureRedirect: '/access-denied' }),
-    (req, res) => res.redirect('/customer/dashboard')
+    (req, res) => res.status(200).json({ message: "Authentication successful" })
 );
-
+router.get('/access-denied',
+    (req, res) =>res.status(500).json({ message: "Authentication failed" })
+);
 // Check session data
 router.get('/session-data', (req, res) => {
     if (req.isAuthenticated()) {
