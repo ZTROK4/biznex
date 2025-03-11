@@ -4,7 +4,6 @@ const bcrypt = require('bcrypt');
 const router = express.Router();
 const passport = require('passport');
 const masterPool = require('./master_db');
-const router = require('./auth');
 const cors = require('cors');
 router.use(express.json());
 
