@@ -1,29 +1,29 @@
 const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
+const router = express.Router();
 const passport = require('passport');
 const masterPool = require('./master_db');
 const cors = require('cors');
 
 
 
-const app = express();
-app.use(express.json());
+router.use(express.json());
 
 // Session middleware
-app.use(session({
+router.use(session({
   secret: 'asdfghjkl',
   resave: false,
   saveUninitialized: false,
   cookie: { secure: false } // Set to true if using HTTPS
 }));
 
-app.use(cors());
-app.use(passport.initialize());
-app.use(passport.session());
+router.use(cors());
+router.use(passport.initialize());
+router.use(passport.session());
 
 // Login route
-app.post("/login-client", async (req, res, next) => {
+router.post("/login-client", async (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -62,15 +62,13 @@ function isAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.redirect('/login');
 }
 
 // Example protected route
-app.get('/dashboard', isAuthenticated, (req, res) => {
+route.get('/dashboard', isAuthenticated, (req, res) => {
   res.json({ message: `Welcome ${req.user.email}` });
 });
 
-app.listen(5000, () => {
-  console.log('Server running on port 5000');
-});
+module.exports = router;
+
 

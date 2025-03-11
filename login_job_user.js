@@ -1,22 +1,22 @@
 const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
+const router = express.Router();
 const passport = require('passport');
 const masterPool = require('./master_db');
 
-const app = express();
-app.use(express.json());
+router.use(express.json());
 
 // Session middleware
-app.use(session({
+router.use(session({
   secret: 'asdfghjkl',
   resave: false,
   saveUninitialized: false,
   cookie: { secure: process.env.NODE_ENV === 'production' } // Secure in production
 }));
 
-app.use(passport.initialize());
-app.use(passport.session());
+router.use(passport.initialize());
+router.use(passport.session());
 
 // Passport serialization
 passport.serializeUser((user, done) => {
@@ -34,7 +34,7 @@ passport.deserializeUser(async (id, done) => {
 });
 
 // Job user login route
-app.post("/login-job-user", async (req, res, next) => {
+router.post("/login-job-user", async (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -76,15 +76,12 @@ function isAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.redirect('/login');
 }
 
 // Example protected route for job users
-app.get('/job-dashboard', isAuthenticated, (req, res) => {
+router.get('/job-dashboard', isAuthenticated, (req, res) => {
   res.json({ message: `Welcome Job User ${req.user.email}` });
 });
 
 // Start the server
-app.listen(5000, () => {
-  console.log('Server running on port 5000');
-});
+module.exports = router;

@@ -7,6 +7,9 @@ const authRoutes = require('./auth');
 const signupRoutes = require('./signup_client');
 const signupJobuser=require('./signup_job_user');
 const signupMarketuser=require('./signup_market_user');
+const loginClient=require('./login_client');
+const loginJobuser=require('./login_job_user');
+const loginMarketuser=require('./login_market_user');
 
 dotenv.config();
 const app = express();
@@ -20,9 +23,12 @@ app.use(session({
     cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
 }));
 app.use(express.json());
-app.use('/signup-client', signupRoutes);
-app.use('/signup-job-user', signupJobuser);
-app.use('/signup-market-user', signupMarketuser);
+app.use('/signup/client', signupRoutes);
+app.use('/signup/job-user', signupJobuser);
+app.use('/signup/market-user', signupMarketuser);
+app.use('/login/client',loginClient);
+app.use('/login/job-user',loginJobuser);
+app.use('/login/market-user',loginMarketuser);
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
