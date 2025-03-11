@@ -4,7 +4,7 @@ const session = require('express-session');
 const dotenv = require('dotenv');
 const pool = require('./master_db'); // PostgreSQL connection
 const authRoutes = require('./auth');
-
+const signupRoutes = require('./signup_client');
 dotenv.config();
 const app = express();
 const PORT = 5000;
@@ -16,7 +16,8 @@ app.use(session({
     saveUninitialized: false,
     cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
 }));
-
+app.use(express.json());
+app.use('/api', signupRoutes);
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
