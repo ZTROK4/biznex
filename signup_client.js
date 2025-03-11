@@ -209,11 +209,11 @@ router.post('/create-client', async (req, res) => {
             [username,ownername, email, address, business_category,'Active',hpassword,phone]
           );
       
-          const userId =  await masterPool.query(
+          const user_id =  await masterPool.query(
             'select client_id from clients where email=$1;',
             [email]
           );
-          const dbName = `user_db_${userId}`;
+          const dbName = `user_db_${user_id}`;
       
           const dbUpdateResult = await masterPool.query(
           'UPDATE clients SET db_name = $1 WHERE client_id = $2 RETURNING *;',
