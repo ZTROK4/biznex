@@ -37,8 +37,14 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'cats',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production', // true on production (HTTPS)
+        httpOnly: true, // Prevent client-side JS access
+        sameSite: 'None', // Allows cross-site cookies (OAuth needs this)
+        maxAge: 24 * 60 * 60 * 1000 // 1 day
+    }
 }));
+
 app.use(express.json());
 app.use('/signup/client', signupRoutes);
 app.use('/signup/job-user', signupJobuser);
