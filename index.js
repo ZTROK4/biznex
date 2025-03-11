@@ -16,9 +16,20 @@ dotenv.config();
 const app = express();
 const PORT = 5000;
 
+const allowedOrigins = [
+    'http://127.0.0.1:5500',          // Local development
+    'https://yourfrontend.com'        // Production client
+];
+
 app.use(cors({
-    origin: '*',       // Allows all origins (Use carefully!)
-    credentials: true, // Allows cookies and sessions
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true, // Allow cookies/session sharing
 }));
 
 // Middleware for express-session
