@@ -1,53 +1,93 @@
 const express = require('express');
-const session = require("express-session");
 const passport = require('passport');
-const authh=require('./auth'); // This should configure your Passport strategies
+const session = require('express-session');
+const dotenv = require('dotenv');
+const pool = require('./master_db'); // PostgreSQL connection
+const authRoutes = require('./auth'); // Import the fixed router
 
+dotenv.config();
 const app = express();
-const PORT = 3000;
+const PORT = 5000;
 
 // Middleware for express-session
 app.use(session({
-    secret: 'your-secure-random-string', // Use a strong secret
+    secret: 'cats',  // Use a secure, random string
     resave: false,
     saveUninitialized: false,
-    cookie: {
-        secure: process.env.NODE_ENV === 'production', // true on HTTPS
-        maxAge: 24 * 60 * 60 * 1000 // 1 day
-    }
+    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 1 day
 }));
-app.use('/auth', authh);
+
+// Separate session instances for each user type
+const clientSession = session({ secret: 'client_secret', resave: false, saveUninitialized: false, name: 'client.sid' });
+const jobUserSession = session({ secret: 'job_user_secret', resave: false, saveUninitialized: false, name: 'jobuser.sid' });
+const marketUserSession = session({ secret: 'market_user_secret', resave: false, saveUninitialized: false, name: 'marketuser.sid' });
+
+// Apply sessions dynamically
+app.use('/auth/google/client', clientSession);
+app.use('/auth/google/job_user', jobUserSession);
+app.use('/auth/google/market_user', marketUserSession);
+
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Middleware to check if the user is logged in
-function isLoggedIn(req, res, next) {
-    req.user ? next() : res.sendStatus(401);
-}
+// Google OAuth Strategy - Dynamic Callback
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const createGoogleStrategy = (userType) => {
+    return new GoogleStrategy({
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: `http://localhost:5000/auth/google/${userType}/callback`,
+    }, async (accessToken, refreshToken, profile, done) => {
+        try {
+            const email = profile.emails[0].value;
 
-// Home route with an authentication link
-app.get('/', (req, res) => {
-    res.send('<a href="/auth/google/job_user">Authenticate with Google</a>');
-});
+            let user;
+            if (userType === 'client') {
+                user = await pool.query('SELECT * FROM clients WHERE email = $1', [email]);
+            } else if (userType === 'job_user') {
+                user = await pool.query('SELECT * FROM job_user WHERE email = $1', [email]);
+            } else if (userType === 'market_user') {
+                user = await pool.query('SELECT * FROM market_user WHERE email = $1', [email]);
+            }
 
-// Example protected route using isLoggedIn middleware
-app.get('/profile', isLoggedIn, (req, res) => {
-    res.send(`Hello ${req.user.email}, welcome to your profile page!`);
-});
-
-// Logout route
-app.get('/logout', (req, res, next) => {
-    req.logout((err) => {
-        if (err) {
-            return next(err);
+            if (user.rows.length > 0) {
+                return done(null, { 
+                    id: user.rows[0].client_id || user.rows[0].id,
+                    email: user.rows[0].email,
+                    dbname: userType === 'client' ? user.rows[0].db_name : null,
+                    userType
+                });
+            } else {
+                return done(null, false, { message: 'User not found' });
+            }
+        } catch (err) {
+            return done(err);
         }
-        req.session.destroy(() => {
-            res.clearCookie('connect.sid'); // Clear the default session cookie
-            res.redirect('/');
-        });
+    });
+};
+
+// Register strategies
+passport.use('google-client', createGoogleStrategy('client'));
+passport.use('google-job_user', createGoogleStrategy('job_user'));
+passport.use('google-market_user', createGoogleStrategy('market_user'));
+
+// Passport session handling
+passport.serializeUser((user, done) => {
+    done(null, {
+        id: user.id,
+        dbname: user.dbname,
+        email: user.email,
+        userType: user.userType
     });
 });
 
-// Start the server
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+passport.deserializeUser((obj, done) => done(null, obj));
+
+// Use the auth router
+app.use('/', authRoutes); // ✅ Properly register the router
+
+// Start server
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
