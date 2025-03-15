@@ -38,11 +38,11 @@ router.post('/list_job', async (req, res) => {
     }
 });
 
-router.get('/delete_job', async (req, res) => {
+router.post('/delete_job', async (req, res) => {
     const { job_id } = req.body;
 
     // Check for missing fields
-    if (!jobid ) {
+    if (!job_id ) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
     try {
@@ -90,3 +90,4 @@ router.get('/get_job_list', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+module.exports = router;
