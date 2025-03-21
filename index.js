@@ -76,6 +76,8 @@ const createGoogleStrategy = (userType) => {
             const email = profile.emails[0].value;
             let userQuery = '';
 
+
+
             switch (userType) {
                 case 'client':
                     userQuery = 'SELECT * FROM clients WHERE email = $1';
