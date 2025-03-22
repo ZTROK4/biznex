@@ -24,6 +24,7 @@ router.use(passport.session());
 
 // Login route
 router.post("/login-client", async (req, res, next) => {
+  console.log("Login client request received:", req.body); 
   const { email, password } = req.body;
 
   if (!email || !password) {
