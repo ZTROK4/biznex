@@ -18,7 +18,7 @@ const app = express();
 const PORT = 5000;
 
 const allowedOrigins = [
-    'http://127.0.0.1:5500',          // Local development
+    'http://127.0.0.1:5000',          // Local development
     'https://yourfrontend.com'        // Production client
 ];
 
