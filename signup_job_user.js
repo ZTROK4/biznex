@@ -80,7 +80,7 @@ router.post("/send-email-otp-job-user", async (req, res) => {
   
 });
 
-// 📲 2. Send Phone OTP
+//  2. Send Phone OTP
 
 router.post("/send-phone-otp-job-user", async (req, res) => {
     const { email, phone } = req.body;
@@ -107,7 +107,7 @@ router.post("/send-phone-otp-job-user", async (req, res) => {
         [phoneOtp, expiresAt, email, phone]
       );
   
-      // Send OTP using Twilio (replace with your provider if needed)
+      // Send OTP using Twilio 
       await client.messages.create({
         body: `Your OTP is: ${phoneOtp}`,
         from: process.env.TWILIO_PHONE_NUMBER,
@@ -123,7 +123,7 @@ router.post("/send-phone-otp-job-user", async (req, res) => {
   });
   
 
-// ✅ 3. Verify Email OTP
+// 3. Verify Email OTP
 router.post("/verify-email-otp-job-user", async (req, res) => {
   const { email, emailOtp } = req.body;
   if (!email || !emailOtp) return res.status(400).json({ error: "Email and OTP are required." });
@@ -149,7 +149,7 @@ router.post("/verify-email-otp-job-user", async (req, res) => {
   }
 });
 
-// ✅ 4. Verify Phone OTP
+// 4. Verify Phone OTP
 router.post("/verify-phone-otp-job-user", async (req, res) => {
   const { email, phoneOtp } = req.body;
   if (!email || !phoneOtp) return res.status(400).json({ error: "Email and phone OTP are required." });
@@ -187,7 +187,7 @@ async function hashPassword(password) {
     }
   }
 
-// Create a new database for each user
+// Create user
 router.post('/create-job-user', async (req, res) => {
   const { username,email,address,dob,phone, password } = req.body;
   if (!username || !email || !password) {

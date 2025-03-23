@@ -12,7 +12,7 @@ router.use(session({
   secret: 'asdfghjkl',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: process.env.NODE_ENV === 'production' } // Secure in production
+  cookie: { secure: process.env.NODE_ENV === 'production' } 
 }));
 
 router.use(passport.initialize());
@@ -20,7 +20,7 @@ router.use(passport.session());
 router.use(cors());
 // Passport serialization
 passport.serializeUser((user, done) => {
-  done(null, user.id); // Store user ID in session
+  done(null, user.id); 
 });
 
 passport.deserializeUser(async (id, done) => {
@@ -82,10 +82,9 @@ function isAuthenticated(req, res, next) {
   }
 }
 
-// Example protected route for job users
+
 router.get('/job-dashboard', isAuthenticated, (req, res) => {
   res.json({ message: `Welcome Job User ${req.user.email}` });
 });
 
-// Start the server
 module.exports = router;

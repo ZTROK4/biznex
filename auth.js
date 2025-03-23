@@ -3,7 +3,7 @@ const passport = require('passport');
 const router = express.Router();
 const cors = require('cors');
 router.use(cors({
-    origin: '*',       // Allows all origins (Use carefully!)
+    origin: '*',       // Allows all origins 
     credentials: true, // Allows cookies and sessions
 }));
 // Google Auth Routes
@@ -29,7 +29,7 @@ router.get('/google/market_user/callback',
 router.get('/access-denied',
     (req, res) =>res.status(500).json({ message: "Authentication failed" })
 );
-// Check session data
+
 router.get('/session-data', (req, res) => {
     if (req.isAuthenticated()) {
         res.json({

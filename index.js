@@ -19,7 +19,6 @@ const PORT = 5000;
 
 
 
-// ✅ Unified CORS configuration
 app.use(cors({
     origin: ["http://localhost:5000", "https://biznex.site"],
     credentials: true,
@@ -33,20 +32,19 @@ app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     next();
 });
-// ✅ Middleware for express-session
+
 app.use(session({
     secret: process.env.SESSION_SECRET || 'cats',
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: process.env.NODE_ENV === 'production', // Ensure secure cookies for HTTPS
+        secure: process.env.NODE_ENV === 'production', 
         httpOnly: true, 
-        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // Fix cross-site cookie issues
-        maxAge: 24 * 60 * 60 * 1000 // 1 day
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
     }
 }));
 
-// ✅ Middleware
+
 app.use(express.json());
 app.use('/signup/client', signupRoutes);
 app.use('/signup/job-user', signupJobuser);
@@ -56,12 +54,11 @@ app.use('/login/job-user', loginJobuser);
 app.use('/login/market-user', loginMarketuser);
 app.use('/job/client',jobClient);
 
-// ✅ Passport Initialization
+
 app.use(passport.initialize());
 app.use(passport.session());
 
 
-// Google OAuth Strategy - Dynamic Callback
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const createGoogleStrategy = (userType) => {
@@ -108,19 +105,17 @@ const createGoogleStrategy = (userType) => {
     });
 };
 
-// ✅ Register strategies
+// Register strategies
 passport.use('google-client', createGoogleStrategy('client'));
 passport.use('google-job_user', createGoogleStrategy('job_user'));
 passport.use('google-market_user', createGoogleStrategy('market_user'));
 
-// ✅ Passport session handling
+
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((obj, done) => done(null, obj));
 
-// ✅ Use the auth router
 app.use('/auth', authRoutes);
 
-// ✅ Start server
 app.listen(PORT, () => {
     console.log(`✅ Server running on https://biznex.onrender.com`);
 });

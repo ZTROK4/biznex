@@ -12,7 +12,7 @@ router.use(session({
   secret: 'asdfghjkl',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // Set to true if using HTTPS
+  cookie: { secure: false } 
 }));
 router.use(cors());
 router.use(passport.initialize());
@@ -64,7 +64,6 @@ function isAuthenticated(req, res, next) {
   }
 }
 
-// Protected route for market users
 router.get('/market-dashboard', isAuthenticated, (req, res) => {
   res.json({ message: `Welcome market user: ${req.user.email}` });
 });

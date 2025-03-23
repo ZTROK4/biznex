@@ -32,7 +32,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Helper: Generate a 6-digit OTP
+// Generate a 6-digit OTP
 const generateOTP = () => crypto.randomInt(100000, 999999).toString();
 
 //  1. Send Email OTP
@@ -48,8 +48,8 @@ router.post("/send-email-otp", async (req, res) => {
     
         // Remove old OTP entries before inserting a new one
         await masterPool.query('DELETE FROM client_verifications WHERE email = $1', [email]);
-        // Insert or update user record
         
+        // Insert or update user record
         await masterPool.query(
           `INSERT INTO client_verifications (email, email_otp, expires_at)
            VALUES ($1, $2, $3)
@@ -106,7 +106,7 @@ router.post("/send-phone-otp", async (req, res) => {
       [phoneOtp, expiresAt, phone, email]
     );
 
-    // Send OTP using Twilio (replace with your provider if needed)
+    // Send OTP using Twilio 
     await client.messages.create({
       body: `Your OTP is: ${phoneOtp}`,
       from: process.env.TWILIO_PHONE_NUMBER,
@@ -186,7 +186,7 @@ async function hashPassword(password) {
     }
   }
 
-// Create a new database for each user
+// Create a new  user
 router.post('/create-client', async (req, res) => {
   const { username,ownername, address, email,business_category,phone, password } = req.body;
   if (!username || !email || !password ||!ownername||!address||!business_category||!phone) {

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const masterPool = require('./master_db');
 
-// ✅ List Job
+//  List Job
 router.post('/list_job', async (req, res) => {
     const { jobtitle, desc, location, salary } = req.body;
 
@@ -32,7 +32,7 @@ router.post('/list_job', async (req, res) => {
     }
 });
 
-// ✅ Delete Job (Fixed to use POST and check client_id)
+//  Delete Job 
 router.post('/delete_job', async (req, res) => {
     const { job_id } = req.body;
 
@@ -62,7 +62,7 @@ router.post('/delete_job', async (req, res) => {
     }
 });
 
-// ✅ Get Job List
+//  Get Job List
 router.get('/get_job_list', async (req, res) => {
     try {
         if (!req.session?.user?.id) {

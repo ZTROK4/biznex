@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const router = express.Router();
 const passport = require('passport');
 const masterPool = require('./master_db');
-//const cors = require('cors');
+
 
 
 
@@ -15,10 +15,10 @@ router.use(session({
   secret: 'asdfghjkl',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // Set to true if using HTTPS
+  cookie: { secure: false } 
 }));
 
-//router.use(cors());
+
 router.use(passport.initialize());
 router.use(passport.session());
 
@@ -62,14 +62,13 @@ router.post("/login-client", async (req, res, next) => {
   }
 });
 
-// Auth check middleware
 function isAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
 }
 
-// Example protected route
+
 router.get('/dashboard', isAuthenticated, (req, res) => {
   res.json({ message: `Welcome ${req.user.email}` });
 });
