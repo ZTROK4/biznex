@@ -22,7 +22,7 @@ const PORT = 5000;
 // ✅ Unified CORS configuration
 app.use(cors({
     origin: (origin, callback) => {
-        const allowedOrigins = ["http://localhost:5000", "https://biznex.site"];
+        const allowedOrigins = ["http://localhost:5000/login", "https://biznex.site"];
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
