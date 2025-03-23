@@ -21,8 +21,15 @@ const PORT = 5000;
 
 // ✅ Unified CORS configuration
 app.use(cors({
-    origin: ["http://localhost:5000", "https://biznex.site"], // Add your frontend URL
-    credentials: true, // Needed for cookies/auth headers
+    origin: (origin, callback) => {
+        const allowedOrigins = ["http://localhost:5000", "https://biznex.site"];
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -33,9 +40,9 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
+        secure: process.env.NODE_ENV === 'production', // Ensure secure cookies for HTTPS
         httpOnly: true, 
-        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // Lax for local dev
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // Fix cross-site cookie issues
         maxAge: 24 * 60 * 60 * 1000 // 1 day
     }
 }));
@@ -53,6 +60,7 @@ app.use('/job/client',jobClient);
 // ✅ Passport Initialization
 app.use(passport.initialize());
 app.use(passport.session());
+
 
 // Google OAuth Strategy - Dynamic Callback
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
