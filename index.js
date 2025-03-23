@@ -17,26 +17,14 @@ dotenv.config();
 const app = express();
 const PORT = 5000;
 
-const allowedOrigins = [
-    'http://127.0.0.1:5000',
-    'http://127.0.0.1:5500',
-    'http://localhost:5500',
-    'http://localhost:5000',        // Local development
-    'https://yourfrontend.com'        // Production client
-];
+
 
 // ✅ Unified CORS configuration
 app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true, // Allow cookies/session sharing
+    origin: ["http://localhost:5000", "https://biznex.site"], // Add your frontend URL
+    credentials: true, // Needed for cookies/auth headers
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type']
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // ✅ Middleware for express-session
@@ -45,9 +33,9 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-        httpOnly: true, // Prevents XSS attacks
-        sameSite: 'Lax', // Needed for cross-site cookies (OAuth)
+        secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
+        httpOnly: true, 
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // Lax for local dev
         maxAge: 24 * 60 * 60 * 1000 // 1 day
     }
 }));
