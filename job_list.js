@@ -16,7 +16,7 @@ router.post('/list_job', async (req, res) => {
         }
 
         const result = await masterPool.query(
-            `INSERT INTO job_list (jobtitle, client_id, desc, location, salary_range, status) 
+            `INSERT INTO job_list (job_title, client_id, desc, location, salary_range, status) 
              VALUES ($1, $2, $3, $4, $5, $6) RETURNING client_id;`,
             [jobtitle, req.session.user.id, desc, location, salary, 'open']
         );
