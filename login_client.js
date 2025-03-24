@@ -4,10 +4,6 @@ const bcrypt = require('bcrypt');
 const router = express.Router();
 const passport = require('passport');
 const masterPool = require('./master_db');
-
-
-
-
 router.use(express.json());
 
 // Session middleware

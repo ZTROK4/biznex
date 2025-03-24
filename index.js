@@ -12,6 +12,7 @@ const loginClient = require('./login_client');
 const loginJobuser = require('./login_job_user');
 const loginMarketuser = require('./login_market_user');
 const jobClient = require('./job_list');
+const dashBoard = require('./dashmain');
 
 dotenv.config();
 const app = express();
@@ -47,7 +48,7 @@ app.use('/login/client', loginClient);
 app.use('/login/job-user', loginJobuser);
 app.use('/login/market-user', loginMarketuser);
 app.use('/job/client',jobClient);
-
+app.use('/dashboard',dashBoard);
 
 app.use(passport.initialize());
 app.use(passport.session());
