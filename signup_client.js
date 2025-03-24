@@ -312,14 +312,25 @@ router.post('/create-client', async (req, res) => {
               CONSTRAINT fk_order_log FOREIGN KEY (order_id) REFERENCES orders(order_id)
             );
 
-            CREATE TABLE expenses (
+            CREATE TABLE man_expenses (
               id SERIAL PRIMARY KEY,
               client_id INTEGER REFERENCES clients(client_id) ON DELETE CASCADE,
-              category VARCHAR(100) NOT NULL,
+              type VARCHAR(100) NOT NULL,
               description TEXT,
               amount NUMERIC(10,2) NOT NULL CHECK (amount >= 0),
               payment_method VARCHAR(50) CHECK (payment_method IN ('Cash', 'Card', 'UPI', 'Bank Transfer', 'Other')),
               expense_date DATE NOT NULL,
+              created_at TIMESTAMP DEFAULT NOW()
+            );
+
+            CREATE TABLE man_incomes (
+              id SERIAL PRIMARY KEY,
+              client_id INTEGER REFERENCES clients(client_id) ON DELETE CASCADE,
+              type VARCHAR(100) NOT NULL,
+              description TEXT,
+              amount NUMERIC(10,2) NOT NULL CHECK (amount >= 0),
+              payment_method VARCHAR(50) CHECK (payment_method IN ('Cash', 'Card', 'UPI', 'Bank Transfer', 'Other')),
+              income_date DATE NOT NULL,
               created_at TIMESTAMP DEFAULT NOW()
             );
 

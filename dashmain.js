@@ -24,21 +24,22 @@ router.use((req, res, next) => {
 //1-income value
 router.get('/income/sum/all', async (req, res) => {
     try {
-        const result1 = await req.db.query(`
-            SELECT COALESCE(SUM(total_amount), 0) AS total_revenue
-            FROM bills
-            WHERE DATE(generated_at) = CURRENT_DATE AND status = 'paid';
-        `);
+        const query = `
+            SELECT COALESCE(SUM(total_revenue), 0) AS total_income FROM (
+                SELECT SUM(total_amount) AS total_revenue FROM bills 
+                WHERE DATE(generated_at) = CURRENT_DATE AND status = 'paid'
+                UNION ALL
+                SELECT SUM(total_amount) AS total_revenue FROM web_bills 
+                WHERE DATE(generated_at) = CURRENT_DATE AND status = 'paid'
+                UNION ALL
+                SELECT SUM(amount) AS total_revenue FROM man_incomes 
+                WHERE DATE(income_date) = CURRENT_DATE
+            ) AS combined_income;
+        `;
 
-        const result2 = await req.db.query(`
-            SELECT COALESCE(SUM(total_amount), 0) AS total_revenue
-            FROM web_bills
-            WHERE DATE(generated_at) = CURRENT_DATE AND status = 'paid';
-        `);
+        const result = await req.db.query(query);
+        res.json({ total_income: result.rows[0].total_income });
 
-        const totalIncome = result1.rows[0].total_revenue + result2.rows[0].total_revenue;
-
-        res.json({ total_income: totalIncome });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Database query failed' });
@@ -57,14 +58,16 @@ router.post('/income/group', async (req, res) => {
 
         const query = `
             SELECT 
-                DATE_TRUNC('day', generated_at) AS period, 
+                DATE_TRUNC('day', period) AS period, 
                 COALESCE(SUM(total_amount), 0) AS total_revenue
             FROM (
-                SELECT generated_at, total_amount FROM bills WHERE status = 'paid'
+                SELECT generated_at AS period, total_amount FROM bills WHERE status = 'paid'
                 UNION ALL
-                SELECT generated_at, total_amount FROM web_bills WHERE status = 'paid'
+                SELECT generated_at AS period, total_amount FROM web_bills WHERE status = 'paid'
+                UNION ALL
+                SELECT income_date AS period, amount AS total_amount FROM man_incomes
             ) AS combined_data
-            WHERE generated_at >= DATE_TRUNC($1, CURRENT_DATE) 
+            WHERE period >= DATE_TRUNC($1, CURRENT_DATE) 
             GROUP BY period
             ORDER BY period ASC;
         `;
@@ -77,20 +80,23 @@ router.post('/income/group', async (req, res) => {
     }
 });
 
+
 //3-percent change in income
 router.get('/income/percent-change', async (req, res) => {
     try {
         const query = `
             WITH weekly_income AS (
                 SELECT 
-                    DATE_TRUNC('week', generated_at) AS week_start,
+                    DATE_TRUNC('week', period) AS week_start,
                     SUM(total_amount) AS total_revenue
                 FROM (
-                    SELECT generated_at, total_amount FROM bills WHERE status = 'paid'
+                    SELECT generated_at AS period, total_amount FROM bills WHERE status = 'paid'
                     UNION ALL
-                    SELECT generated_at, total_amount FROM web_bills WHERE status = 'paid'
+                    SELECT generated_at AS period, total_amount FROM web_bills WHERE status = 'paid'
+                    UNION ALL
+                    SELECT income_date AS period, amount AS total_amount FROM man_incomes
                 ) AS combined_data
-                WHERE generated_at >= NOW() - INTERVAL '2 weeks'
+                WHERE period >= NOW() - INTERVAL '2 weeks'
                 GROUP BY week_start
                 ORDER BY week_start DESC
             )
@@ -115,24 +121,29 @@ router.get('/income/percent-change', async (req, res) => {
         res.status(500).json({ error: 'Database query failed' });
     }
 });
+
   
 //4- expense value
 router.get('/expense/sum/all', async (req, res) => {
     try {
-        const result = await req.db.query(`
+        const query = `
             SELECT COALESCE(SUM(amount), 0) AS total_expense
-            FROM expenses
-            WHERE DATE(expense_date) = CURRENT_DATE;
-        `);
+            FROM (
+                SELECT amount FROM expenses WHERE DATE(expense_date) = CURRENT_DATE
+                UNION ALL
+                SELECT amount FROM man_expenses WHERE DATE(expense_date) = CURRENT_DATE
+            ) AS combined_expenses;
+        `;
 
-        const totalExpense = result.rows[0].total_expense; 
+        const result = await req.db.query(query);
+        res.json({ total_expense: result.rows[0].total_expense });
 
-        res.json({ total_expense: totalExpense }); 
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Database query failed' });
     }
 });
+
 
 
 // 5- grouped expense value 
@@ -147,9 +158,13 @@ router.post('/expense/group', async (req, res) => {
 
         const query = `
             SELECT 
-                DATE_TRUNC('day', expense_date) AS period, 
+                DATE_TRUNC($1, expense_date) AS period, 
                 COALESCE(SUM(amount), 0) AS total_expense
-            FROM expenses
+            FROM (
+                SELECT expense_date, amount FROM expenses
+                UNION ALL
+                SELECT expense_date, amount FROM man_expenses
+            ) AS combined_expenses
             WHERE expense_date >= DATE_TRUNC($1, CURRENT_DATE)
             GROUP BY period
             ORDER BY period;
@@ -163,6 +178,7 @@ router.post('/expense/group', async (req, res) => {
     }
 });
 
+
 // 6-weekly changed expense
 router.get('/expense/percent-change', async (req, res) => {
     try {
@@ -171,7 +187,11 @@ router.get('/expense/percent-change', async (req, res) => {
                 SELECT 
                     DATE_TRUNC('week', expense_date) AS week_start, 
                     SUM(amount) AS total_expense
-                FROM expenses
+                FROM (
+                    SELECT expense_date, amount FROM expenses
+                    UNION ALL
+                    SELECT expense_date, amount FROM man_expenses
+                ) AS combined_expenses
                 GROUP BY week_start
             )
             SELECT 
@@ -200,6 +220,7 @@ router.get('/expense/percent-change', async (req, res) => {
         res.status(500).json({ error: 'Database query failed' });
     }
 });
+
 
 
 // 7-orders value
@@ -297,21 +318,27 @@ router.post('/grouped/all', async (req, res) => {
         const query = `
             WITH income AS (
                 SELECT 
-                    DATE_TRUNC('day', generated_at) AS period, 
+                    DATE_TRUNC($1, generated_at) AS period, 
                     COALESCE(SUM(total_amount), 0) AS total_income
                 FROM (
                     SELECT generated_at, total_amount FROM bills WHERE status = 'paid'
                     UNION ALL
                     SELECT generated_at, total_amount FROM web_bills WHERE status = 'paid'
-                ) AS combined_data
+                    UNION ALL
+                    SELECT income_date AS generated_at, amount AS total_amount FROM man_incomes
+                ) AS combined_income
                 WHERE generated_at >= DATE_TRUNC($1, CURRENT_DATE)
                 GROUP BY period
             ),
             expenses AS (
                 SELECT 
-                    DATE_TRUNC('day', expense_date) AS period, 
+                    DATE_TRUNC($1, expense_date) AS period, 
                     COALESCE(SUM(amount), 0) AS total_expense
-                FROM expenses
+                FROM (
+                    SELECT expense_date, amount FROM expenses
+                    UNION ALL
+                    SELECT expense_date, amount FROM man_expenses
+                ) AS combined_expenses
                 WHERE expense_date >= DATE_TRUNC($1, CURRENT_DATE)
                 GROUP BY period
             )
@@ -332,6 +359,7 @@ router.post('/grouped/all', async (req, res) => {
         res.status(500).json({ error: 'Database query failed' });
     }
 });
+
 
 
 module.exports = router;

@@ -154,4 +154,59 @@ router.get('/receivable-accounts', async (req, res) => {
     }
 });
 
+//7- add manual transaction
+
+router.post('/add-man-transaction', async (req, res) => {
+    try {
+        const { type, client_id, description, amount, date } = req.body;
+
+        if (!['income', 'expense'].includes(type)) {
+            return res.status(400).json({ error: 'Invalid type. Use "income" or "expense".' });
+        }
+
+        if (!client_id || !amount || !date) {
+            return res.status(400).json({ error: 'Missing required fields.' });
+        }
+
+        const tableName = type === 'income' ? 'man_incomes' : 'man_expenses';
+        const dateColumn = type === 'income' ? 'income_date' : 'expense_date';
+
+        const query = `
+            INSERT INTO ${tableName} (client_id, description, amount, ${dateColumn}, type)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING *;
+        `;
+
+        const values = [client_id, description, amount, date, type];
+        const result = await req.db.query(query, values);
+
+        res.status(201).json({ message: `${type} added successfully`, data: result.rows[0] });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Database insertion failed' });
+    }
+});
+
+//8- display manual transactions
+
+router.get('/manual-transactions', async (req, res) => {
+    try {
+        const query = `
+            SELECT id, client_id, description, amount, income_date AS date, 'income' AS type
+            FROM man_incomes
+            UNION ALL
+            SELECT id, client_id, description, amount, expense_date AS date, 'expense' AS type
+            FROM man_expenses
+            ORDER BY date DESC;
+        `;
+
+        const result = await req.db.query(query);
+        res.json(result.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Database query failed' });
+    }
+});
+
+
 module.exports = router;
