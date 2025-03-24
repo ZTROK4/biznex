@@ -64,7 +64,7 @@ router.post("/send-email-otp", async (req, res) => {
           subject: "Your Email OTP",
           text: `Your email OTP is: ${emailOtp}. It is valid for 10 minutes.`,
         });
-    
+        console.log(` Sent OTP to ${email}: ${emailOtp}`);
         res.json({ message: "Email OTP sent successfully." });
       } catch (error) {
         console.error("Error sending email OTP:", error);
