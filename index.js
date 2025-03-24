@@ -13,8 +13,8 @@ const loginJobuser = require('./login_job_user');
 const loginMarketuser = require('./login_market_user');
 const jobClient = require('./job_list');
 const dashBoard = require('./dashmain');
-const financeV = require('/finance');
-const invenV = require('/inventory');
+const financeV = require('./finance');
+const invenV = require('./inventory');
 
 
 dotenv.config();
