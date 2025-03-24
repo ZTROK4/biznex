@@ -20,7 +20,7 @@ const PORT = 5000;
 
 
 const corsOptions = {
-    origin: ['http://localhost:5000', 'http://192.168.x.x:5000'],
+    origin: 'http://localhost:5000',
     credentials: true, 
   };
   
