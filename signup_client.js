@@ -244,6 +244,9 @@ router.post('/create-client', async (req, res) => {
             CREATE TYPE web_bill_log_status AS ENUM ('generated', 'paid', 'refunded');
             CREATE TYPE order_status AS ENUM ('pending', 'processing', 'completed', 'cancelled');
             CREATE TYPE order_log_status AS ENUM ('created', 'processing', 'shipped', 'cancelled', 'delivered');
+            CREATE TYPE payment_status AS ENUM ('Pending', 'Paid', 'Overdue');
+            CREATE TYPE payment_method AS ENUM ('Cash', 'Credit Card', 'Bank Transfer', 'Other');
+
       
             CREATE TABLE cart (
               cart_id SERIAL PRIMARY KEY,
@@ -308,7 +311,63 @@ router.post('/create-client', async (req, res) => {
               updated_at TIMESTAMP DEFAULT NOW(),
               CONSTRAINT fk_order_log FOREIGN KEY (order_id) REFERENCES orders(order_id)
             );
-      
+
+            CREATE TABLE expenses (
+              id SERIAL PRIMARY KEY,
+              client_id INTEGER REFERENCES clients(client_id) ON DELETE CASCADE,
+              category VARCHAR(100) NOT NULL,
+              description TEXT,
+              amount NUMERIC(10,2) NOT NULL CHECK (amount >= 0),
+              payment_method VARCHAR(50) CHECK (payment_method IN ('Cash', 'Card', 'UPI', 'Bank Transfer', 'Other')),
+              expense_date DATE NOT NULL,
+              created_at TIMESTAMP DEFAULT NOW()
+            );
+
+            CREATE TABLE accounts_payable (
+              id SERIAL PRIMARY KEY,
+              account_name VARCHAR(255) NOT NULL,
+              amount DECIMAL(10,2) NOT NULL,
+              payment_date DATE NOT NULL,
+              payment_method payment_method NOT NULL,
+              status payment_status DEFAULT 'Pending',
+              created_at TIMESTAMP DEFAULT NOW()
+            );
+
+            CREATE TABLE accounts_receivable (
+              id SERIAL PRIMARY KEY,
+              account_name VARCHAR(255) NOT NULL,
+              amount DECIMAL(10,2) NOT NULL,
+              due_date DATE NOT NULL,
+              status payment_status DEFAULT 'Pending',
+              created_at TIMESTAMP DEFAULT NOW()
+            );
+
+
+
+            CREATE TABLE accounts_payable_log (
+              log_id SERIAL PRIMARY KEY,
+              payable_id INT NOT NULL,
+              account_name VARCHAR(255) NOT NULL,
+              amount DECIMAL(10,2) NOT NULL,
+              payment_date DATE NOT NULL,
+              payment_method payment_method NOT NULL,
+              status payment_status NOT NULL,
+              changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              operation_type VARCHAR(10) CHECK (operation_type IN ('INSERT', 'UPDATE', 'DELETE'))
+            );
+
+            CREATE TABLE accounts_receivable_log (
+              log_id SERIAL PRIMARY KEY,
+              receivable_id INT NOT NULL,
+              account_name VARCHAR(255) NOT NULL,
+              amount DECIMAL(10,2) NOT NULL,
+              due_date DATE NOT NULL,
+              status payment_status NOT NULL,
+              changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              operation_type VARCHAR(10) CHECK (operation_type IN ('INSERT', 'UPDATE', 'DELETE'))
+            );
+
+
             -- Trigger functions for logs
       
             CREATE OR REPLACE FUNCTION log_cart_changes() RETURNS TRIGGER AS $$
@@ -354,6 +413,52 @@ router.post('/create-client', async (req, res) => {
             CREATE TRIGGER order_log_trigger
             AFTER INSERT OR UPDATE ON orders
             FOR EACH ROW EXECUTE FUNCTION log_order_changes();
+
+
+            CREATE OR REPLACE FUNCTION log_accounts_payable_changes()
+            RETURNS TRIGGER AS $$
+            BEGIN
+                IF TG_OP = 'DELETE' THEN
+                    INSERT INTO accounts_payable_log (payable_id, account_name, amount, payment_date, payment_method, status, operation_type)
+                    VALUES (OLD.id, OLD.account_name, OLD.amount, OLD.payment_date, OLD.payment_method, OLD.status, 'DELETE');
+                ELSIF TG_OP = 'UPDATE' THEN
+                    INSERT INTO accounts_payable_log (payable_id, account_name, amount, payment_date, payment_method, status, operation_type)
+                    VALUES (NEW.id, NEW.account_name, NEW.amount, NEW.payment_date, NEW.payment_method, NEW.status, 'UPDATE');
+                ELSE
+                    INSERT INTO accounts_payable_log (payable_id, account_name, amount, payment_date, payment_method, status, operation_type)
+                    VALUES (NEW.id, NEW.account_name, NEW.amount, NEW.payment_date, NEW.payment_method, NEW.status, 'INSERT');
+                END IF;
+                RETURN NULL;
+            END;
+            $$ LANGUAGE plpgsql;
+
+            CREATE TRIGGER trigger_accounts_payable
+            AFTER INSERT OR UPDATE OR DELETE ON accounts_payable
+            FOR EACH ROW EXECUTE FUNCTION log_accounts_payable_changes();
+
+
+            CREATE OR REPLACE FUNCTION log_accounts_receivable_changes()
+            RETURNS TRIGGER AS $$
+            BEGIN
+                IF TG_OP = 'DELETE' THEN
+                    INSERT INTO accounts_receivable_log (receivable_id, account_name, amount, due_date, status, operation_type)
+                    VALUES (OLD.id, OLD.account_name, OLD.amount, OLD.due_date, OLD.status, 'DELETE');
+                ELSIF TG_OP = 'UPDATE' THEN
+                    INSERT INTO accounts_receivable_log (receivable_id, account_name, amount, due_date, status, operation_type)
+                    VALUES (NEW.id, NEW.account_name, NEW.amount, NEW.due_date, NEW.status, 'UPDATE');
+                ELSE
+                    INSERT INTO accounts_receivable_log (receivable_id, account_name, amount, due_date, status, operation_type)
+                    VALUES (NEW.id, NEW.account_name, NEW.amount, NEW.due_date, NEW.status, 'INSERT');
+                END IF;
+                RETURN NULL;
+            END;
+            $$ LANGUAGE plpgsql;
+
+            CREATE TRIGGER trigger_accounts_receivable
+            AFTER INSERT OR UPDATE OR DELETE ON accounts_receivable
+            FOR EACH ROW EXECUTE FUNCTION log_accounts_receivable_changes();
+
+
           `);
       
           await userPool.end();

@@ -13,6 +13,9 @@ const loginJobuser = require('./login_job_user');
 const loginMarketuser = require('./login_market_user');
 const jobClient = require('./job_list');
 const dashBoard = require('./dashmain');
+const financeV = require('/finance');
+const invenV = require('/inventory');
+
 
 dotenv.config();
 const app = express();
@@ -49,6 +52,8 @@ app.use('/login/job-user', loginJobuser);
 app.use('/login/market-user', loginMarketuser);
 app.use('/job/client',jobClient);
 app.use('/dashboard',dashBoard);
+app.use('/finance',financeV);
+app.use('/inventory',invenV);
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -107,7 +112,13 @@ passport.use('google-market_user', createGoogleStrategy('market_user'));
 
 
 passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((obj, done) => done(null, obj));
+passport.deserializeUser(async (user, done) => {
+    try {
+        done(null, user); 
+    } catch (err) {
+        done(err, null);
+    }
+});
 
 
 

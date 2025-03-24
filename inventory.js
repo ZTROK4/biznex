@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const masterPool = require('./master_db');
 
-app.use((req, res, next) => {
+router.use((req, res, next) => {
     if (!req.session.db_name) {
         return res.status(400).json({ error: 'No database selected. Please log in first.' });
     }
@@ -20,7 +20,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.get('/api/some-data', async (req, res) => {
+router.get('/api/some-data', async (req, res) => {
     try {
         const result = await req.db.query('SELECT * FROM some_table');
         res.json(result.rows);
@@ -29,3 +29,5 @@ app.get('/api/some-data', async (req, res) => {
         res.status(500).json({ error: 'Database query failed' });
     }
 });
+
+module.exports = router;
