@@ -13,7 +13,6 @@ router.use(session({
   saveUninitialized: false,
   cookie: { secure: false } 
 }));
-router.use(cors());
 router.use(passport.initialize());
 router.use(passport.session());
 
