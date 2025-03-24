@@ -10,7 +10,6 @@ const client = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUT
 const crypto = require("crypto");
 const app = express();
 const port = 5000;
-const cors = require('cors');
 // Master database connection
 const masterPool = new Pool({
     user: process.env.DB_USER,
@@ -22,7 +21,6 @@ const masterPool = new Pool({
 
 // Middleware to parse JSON
 router.use(express.json());
-router.use(cors());
 
 
 const transporter = nodemailer.createTransport({

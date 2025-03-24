@@ -39,6 +39,7 @@ app.use(session({
 
 
 app.use(express.json());
+app.use('/auth', authRoutes);
 app.use('/signup/client', signupRoutes);
 app.use('/signup/job-user', signupJobuser);
 app.use('/signup/market-user', signupMarketuser);
@@ -107,7 +108,7 @@ passport.use('google-market_user', createGoogleStrategy('market_user'));
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((obj, done) => done(null, obj));
 
-app.use('/auth', authRoutes);
+
 
 app.listen(PORT, () => {
     console.log(`✅ Server running on https://biznex.onrender.com`);
