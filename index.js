@@ -19,19 +19,12 @@ const PORT = 5000;
 
 
 
-app.use(cors({
-    origin: ["http://localhost:5000", "https://biznex.site"],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
-app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "https://biznex.site");
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    next();
-});
+const corsOptions = {
+    origin: ['http://localhost:5000', 'http://192.168.x.x:5000'],
+    credentials: true, 
+  };
+  
+app.use(cors(corsOptions)); 
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'cats',
