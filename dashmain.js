@@ -50,7 +50,7 @@ router.get('/income/sum/all', async (req, res) => {
 router.post('/income/group', async (req, res) => {
     try {
         const { groupBy = 'day' } = req.query;
-        const validGroups = ['day', 'week', 'month'];
+        const validGroups = ['day', 'week', 'month','year'];
 
         if (!validGroups.includes(groupBy)) {
             return res.status(400).json({ error: 'Invalid groupBy value' });
@@ -150,7 +150,7 @@ router.get('/expense/sum/all', async (req, res) => {
 router.post('/expense/group', async (req, res) => {
     try {
         const { groupBy = 'day' } = req.query;
-        const validGroups = ['day', 'week', 'month'];
+        const validGroups = ['day', 'week', 'month','year'];
 
         if (!validGroups.includes(groupBy)) {
             return res.status(400).json({ error: 'Invalid groupBy value' });
@@ -279,7 +279,7 @@ app.get('/orders/weekly-change', async (req, res) => {
 router.post('/orders/group', async (req, res) => {
     try {
         const { groupBy = 'day' } = req.query;
-        const validGroups = ['day', 'week', 'month'];
+        const validGroups = ['day', 'week', 'month','year'];
 
         if (!validGroups.includes(groupBy)) {
             return res.status(400).json({ error: 'Invalid groupBy value' });
@@ -309,7 +309,7 @@ router.post('/orders/group', async (req, res) => {
 router.post('/grouped/all', async (req, res) => {
     try {
         const { groupBy = 'day' } = req.query;
-        const validGroups = ['day', 'week', 'month'];
+        const validGroups = ['day', 'week', 'month','year'];
 
         if (!validGroups.includes(groupBy)) {
             return res.status(400).json({ error: 'Invalid groupBy value' });
