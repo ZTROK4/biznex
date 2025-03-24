@@ -224,7 +224,7 @@ router.get('/expense/percent-change', async (req, res) => {
 
 
 // 7-orders value
-app.get('/orders/count', async (req, res) => {
+router.get('/orders/count', async (req, res) => {
     try {
         const query = `
             SELECT COUNT(*) AS total_orders 
@@ -241,7 +241,7 @@ app.get('/orders/count', async (req, res) => {
 
 
 // 8-weekly change orders
-app.get('/orders/weekly-change', async (req, res) => {
+router.get('/orders/weekly-change', async (req, res) => {
     try {
         const query = `
             WITH current_week AS (
