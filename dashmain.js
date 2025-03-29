@@ -50,15 +50,32 @@ router.get('/income/sum/all', async (req, res) => {
 router.post('/income/group', async (req, res) => {
     try {
         const { groupBy = 'day' } = req.query;
-        const validGroups = ['day', 'week', 'month','year'];
+        const validGroups = ['day', 'week', 'month', 'year'];
 
         if (!validGroups.includes(groupBy)) {
             return res.status(400).json({ error: 'Invalid groupBy value' });
         }
 
+    
+        let dateTrunc;
+        switch (groupBy) {
+            case 'day':
+                dateTrunc = "DATE_TRUNC('hour', period)"; 
+                break;
+            case 'week':
+            case 'month':
+                dateTrunc = "DATE_TRUNC('day', period)"; 
+                break;
+            case 'year':
+                dateTrunc = "DATE_TRUNC('month', period)"; 
+                break;
+            default:
+                return res.status(400).json({ error: 'Invalid groupBy value' });
+        }
+
         const query = `
             SELECT 
-                DATE_TRUNC('day', period) AS period, 
+                ${dateTrunc} AS period, 
                 COALESCE(SUM(total_amount), 0) AS total_revenue
             FROM (
                 SELECT generated_at AS period, total_amount FROM bills WHERE status = 'paid'
@@ -79,6 +96,7 @@ router.post('/income/group', async (req, res) => {
         res.status(500).json({ error: 'Database query failed' });
     }
 });
+
 
 
 //3-percent change in income
@@ -150,15 +168,34 @@ router.get('/expense/sum/all', async (req, res) => {
 router.post('/expense/group', async (req, res) => {
     try {
         const { groupBy = 'day' } = req.query;
-        const validGroups = ['day', 'week', 'month','year'];
+        const validGroups = ['day', 'week', 'month', 'year'];
 
         if (!validGroups.includes(groupBy)) {
             return res.status(400).json({ error: 'Invalid groupBy value' });
         }
 
+     
+        let dateTrunc;
+        switch (groupBy) {
+            case 'day':
+                dateTrunc = "DATE_TRUNC('hour', expense_date)"; 
+                break;
+            case 'week':
+                dateTrunc = "DATE_TRUNC('day', expense_date)"; 
+                break;
+            case 'month':
+                dateTrunc = "DATE_TRUNC('day', expense_date)";
+                break;
+            case 'year':
+                dateTrunc = "DATE_TRUNC('month', expense_date)"; 
+                break;
+            default:
+                return res.status(400).json({ error: 'Invalid groupBy value' });
+        }
+
         const query = `
             SELECT 
-                DATE_TRUNC($1, expense_date) AS period, 
+                ${dateTrunc} AS period, 
                 COALESCE(SUM(amount), 0) AS total_expense
             FROM (
                 SELECT expense_date, amount FROM expenses
@@ -177,6 +214,7 @@ router.post('/expense/group', async (req, res) => {
         res.status(500).json({ error: 'Database query failed' });
     }
 });
+
 
 
 // 6-weekly changed expense
@@ -279,15 +317,33 @@ router.get('/orders/weekly-change', async (req, res) => {
 router.post('/orders/group', async (req, res) => {
     try {
         const { groupBy = 'day' } = req.query;
-        const validGroups = ['day', 'week', 'month','year'];
+        const validGroups = ['day', 'week', 'month', 'year'];
 
         if (!validGroups.includes(groupBy)) {
             return res.status(400).json({ error: 'Invalid groupBy value' });
         }
 
+        let dateTrunc;
+        switch (groupBy) {
+            case 'day':
+                dateTrunc = "DATE_TRUNC('hour', created_at)"; 
+                break;
+            case 'week':
+                dateTrunc = "DATE_TRUNC('day', created_at)"; 
+                break;
+            case 'month':
+                dateTrunc = "DATE_TRUNC('day', created_at)"; 
+                break;
+            case 'year':
+                dateTrunc = "DATE_TRUNC('month', created_at)"; 
+                break;
+            default:
+                return res.status(400).json({ error: 'Invalid groupBy value' });
+        }
+
         const query = `
             SELECT 
-                DATE_TRUNC('day', created_at) AS period, 
+                ${dateTrunc} AS period, 
                 COUNT(order_id) AS total_orders
             FROM orders
             WHERE status = 'completed'
@@ -304,21 +360,38 @@ router.post('/orders/group', async (req, res) => {
     }
 });
 
+
 //10 -profit,expense, income grouped
 
 router.post('/grouped/all', async (req, res) => {
     try {
         const { groupBy = 'day' } = req.query;
-        const validGroups = ['day', 'week', 'month','year'];
+        const validGroups = ['day', 'week', 'month', 'year'];
 
         if (!validGroups.includes(groupBy)) {
             return res.status(400).json({ error: 'Invalid groupBy value' });
         }
 
+        let dateTrunc;
+        switch (groupBy) {
+            case 'day':
+                dateTrunc = "DATE_TRUNC('hour', generated_at)";
+                break;
+            case 'week':
+            case 'month':
+                dateTrunc = "DATE_TRUNC('day', generated_at)";
+                break;
+            case 'year':
+                dateTrunc = "DATE_TRUNC('month', generated_at)";
+                break;
+            default:
+                return res.status(400).json({ error: 'Invalid groupBy value' });
+        }
+
         const query = `
             WITH income AS (
                 SELECT 
-                    DATE_TRUNC($1, generated_at) AS period, 
+                    ${dateTrunc} AS period, 
                     COALESCE(SUM(total_amount), 0) AS total_income
                 FROM (
                     SELECT generated_at, total_amount FROM bills WHERE status = 'paid'
@@ -332,7 +405,7 @@ router.post('/grouped/all', async (req, res) => {
             ),
             expenses AS (
                 SELECT 
-                    DATE_TRUNC($1, expense_date) AS period, 
+                    ${dateTrunc.replace("generated_at", "expense_date")} AS period, 
                     COALESCE(SUM(amount), 0) AS total_expense
                 FROM (
                     SELECT expense_date, amount FROM expenses
@@ -359,6 +432,7 @@ router.post('/grouped/all', async (req, res) => {
         res.status(500).json({ error: 'Database query failed' });
     }
 });
+
 
 
 
