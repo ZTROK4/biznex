@@ -39,8 +39,8 @@ router.post('/add-product', async (req, res) => {
         typeof quantity !== 'number' ||
         !barcode || typeof barcode !== 'string' ||
         typeof price !== 'number' ||
-        !['offline', 'online', 'both'].includes(type) ||
-        !['active', 'inactive'].includes(status)
+        !['Offline', 'Online', 'Hybrid'].includes(type) ||
+        !['Active', 'Inactive'].includes(status)
     ) {
         return res.status(400).json({ error: 'Invalid product data' });
     }
