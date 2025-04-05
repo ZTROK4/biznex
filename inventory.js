@@ -31,7 +31,7 @@ router.use(async (req, res, next) => {
 });
 
 router.post('/add-product', async (req, res) => {
-    const { name, category, quantity, barcode, price, type, status } = req.body;
+    let { name, category, quantity, barcode, price, type, status } = req.body;
     console.log(req.body);
     quantity = parseInt(quantity);
     price = parseFloat(price);
