@@ -28,7 +28,7 @@ router.use(async (req, res, next) => {
     }
 });
 
-router.post('/product', async (req, res) => {
+router.post('/add-product', async (req, res) => {
     const { name, category, quantity, barcode, price, type, status } = req.body;
 
     if (
@@ -65,5 +65,73 @@ router.post('/product', async (req, res) => {
     }
 });
 
+router.put('/products', async (req, res) => { 
+    const { id,name, category, quantity, barcode, price, type, status } = req.body;
+  
+    if (
+      !name || typeof name !== 'string' ||
+      !category || typeof category !== 'string' ||
+      typeof quantity !== 'number' ||
+      !barcode || typeof barcode !== 'string' ||
+      typeof price !== 'number' ||
+      !['offline', 'online', 'both'].includes(type) ||
+      !['active', 'inactive'].includes(status)
+    ) {
+      return res.status(400).json({ error: 'Invalid product data' });
+    }
+  
+    const updatedAt = moment().format('YYYY-MM-DD HH:mm:ss');
+  
+    try {
+      const result = await req.db.query(
+        `UPDATE products
+         SET name = $1, category = $2, quantity = $3, barcode = $4, price = $5, type = $6, status = $7, updated_at = $8
+         WHERE id = $9
+         RETURNING *`,
+        [name, category, quantity, barcode, price, type, status, updatedAt, id]
+      );
+  
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+  
+      res.status(200).json({ success: true, message: 'Product updated', product: result.rows[0] });
+    } catch (error) {
+      console.error('Error updating product:', error);
+      res.status(500).json({ error: 'Failed to update product' });
+    }
+  });
+  
+
+router.post('/product', async (req, res) => {
+    const { id } = req.body;
+
+    try {
+        const result = await req.db.query('DELETE FROM products WHERE id = $1 RETURNING *', [id]);
+
+        if (result.rowCount === 0) {
+        return res.status(404).json({ error: 'Product not found' });
+        }
+
+        res.status(200).json({ success: true, message: 'Product deleted', product: result.rows[0] });
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        res.status(500).json({ error: 'Failed to delete product' });
+    }
+});
+
+
+
+
+router.get('/products', async (req, res) => {
+    try {
+      const result = await req.db.query('SELECT * FROM products ORDER BY created_at DESC');
+      res.status(200).json({ success: true, products: result.rows });
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      res.status(500).json({ error: 'Failed to fetch products' });
+    }
+  });
+  
 
 module.exports = router;

@@ -260,7 +260,7 @@ router.post('/add-man-transaction', async (req, res) => {
 
         const query = `
             INSERT INTO ${tableName} ( description, amount, ${dateColumn}, type)
-            VALUES ($1, $2, $3, $4, $5)
+            VALUES ($1, $2, $3, $4)
             RETURNING *;
         `;
 
@@ -359,6 +359,96 @@ router.get('/manual-transactions', async (req, res) => {
         res.status(500).json({ error: 'Database query failed' });
     }
 });
+
+router.get('/web-bills', async (req, res) => {
+    try {
+      const query = 'SELECT * FROM web_bills ORDER BY generated_at DESC;';
+      const result = await req.db.query(query); // req.db must be the connected PostgreSQL client
+      res.status(200).json(result.rows);
+    } catch (error) {
+      console.error('Error fetching web bills:', error);
+      res.status(500).json({ error: 'Failed to fetch web bills' });
+    }
+  });
+
+  router.get('/bills', async (req, res) => {
+    try {
+      const result = await req.db.query('SELECT * FROM bills ORDER BY generated_at DESC');
+      res.status(200).json(result.rows);
+    } catch (err) {
+      console.error('Error fetching bills:', err);
+      res.status(500).json({ error: 'Failed to fetch bills' });
+    }
+  });
+
+  router.get('/bills/products', async (req, res) => {
+    const { cartId } = req.params;
+  
+    try {
+      const query = `
+        SELECT 
+          ci.id AS cart_item_id,
+          ci.quantity,
+          p.id AS product_id,
+          p.name,
+          p.price,
+          p.description,
+          p.barcode,
+          p.category,
+          p.status,
+          p.bestseller,
+          p.imageUrl,
+          p.type
+        FROM cart_items ci
+        JOIN products p ON ci.product_id = p.id
+        WHERE ci.cart_id = $1
+      `;
+  
+      const result = await req.db.query(query, [cartId]);
+      res.status(200).json({ cart_id: cartId, items: result.rows });
+  
+    } catch (error) {
+      console.error('Error retrieving cart items:', error);
+      res.status(500).json({ error: 'Failed to retrieve cart items' });
+    }
+  });
+  
+
+  router.get('/web-bills/products', async (req, res) => {
+    const { orderId } = req.params;
+  
+    try {
+      const query = `
+        SELECT 
+          oi.order_item_id,
+          oi.quantity,
+          oi.unit_price,
+          p.id AS product_id,
+          p.name,
+          p.price,
+          p.description,
+          p.barcode,
+          p.category,
+          p.status,
+          p.bestseller,
+          p.imageUrl,
+          p.type
+        FROM order_item oi
+        JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = $1
+      `;
+  
+      const result = await req.db.query(query, [orderId]);
+      res.status(200).json({ order_id: orderId, items: result.rows });
+  
+    } catch (error) {
+      console.error('Error retrieving order items:', error);
+      res.status(500).json({ error: 'Failed to retrieve web bill items' });
+    }
+  });
+
+  
+  
 
 
 module.exports = router;
