@@ -273,6 +273,71 @@ router.post('/add-man-transaction', async (req, res) => {
     }
 });
 
+//update man tran
+
+router.put('/update-man-transaction', async (req, res) => {
+    try {
+      const { id,type, description, amount, date } = req.body;
+  
+      if (!['income', 'expense'].includes(type)) {
+        return res.status(400).json({ error: 'Invalid type. Use "income" or "expense".' });
+      }
+  
+      if (!amount || !date) {
+        return res.status(400).json({ error: 'Missing required fields.' });
+      }
+  
+      const tableName = type === 'income' ? 'man_incomes' : 'man_expenses';
+      const dateColumn = type === 'income' ? 'income_date' : 'expense_date';
+  
+      const query = `
+        UPDATE ${tableName}
+        SET description = $1, amount = $2, ${dateColumn} = $3
+        WHERE id = $4
+        RETURNING *;
+      `;
+  
+      const values = [description, amount, date, id];
+      const result = await req.db.query(query, values);
+  
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Transaction not found' });
+      }
+  
+      res.status(200).json({ message: `${type} updated successfully`, data: result.rows[0] });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Database update failed' });
+    }
+  });
+
+  //deleter mnual transactions
+
+  router.post('/delete-man-transaction', async (req, res) => {
+    try {
+      const { id,type } = req.body;
+  
+      if (!['income', 'expense'].includes(type)) {
+        return res.status(400).json({ error: 'Invalid type. Use "income" or "expense".' });
+      }
+  
+      const tableName = type === 'income' ? 'man_incomes' : 'man_expenses';
+  
+      const query = `DELETE FROM ${tableName} WHERE id = $1 RETURNING *;`;
+      const result = await req.db.query(query, [id]);
+  
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Transaction not found' });
+      }
+  
+      res.status(200).json({ message: `${type} deleted successfully`, data: result.rows[0] });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Database deletion failed' });
+    }
+  });
+  
+  
 //8- display manual transactions
 
 router.get('/manual-transactions', async (req, res) => {
