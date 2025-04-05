@@ -251,7 +251,7 @@ router.post('/add-man-transaction', async (req, res) => {
             return res.status(400).json({ error: 'Invalid type. Use "income" or "expense".' });
         }
 
-        if (!client_id || !amount || !date) {
+        if (!description || !amount || !date) {
             return res.status(400).json({ error: 'Missing required fields.' });
         }
 
@@ -284,7 +284,7 @@ router.put('/update-man-transaction', async (req, res) => {
         return res.status(400).json({ error: 'Invalid type. Use "income" or "expense".' });
       }
   
-      if (!amount || !date) {
+      if (!description || !amount || !date) {
         return res.status(400).json({ error: 'Missing required fields.' });
       }
   
