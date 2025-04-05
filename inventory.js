@@ -65,7 +65,7 @@ router.post('/add-product', async (req, res) => {
     }
 });
 
-router.put('/products', async (req, res) => { 
+router.put('/update-products', async (req, res) => { 
     const { id,name, category, quantity, barcode, price, type, status } = req.body;
   
     if (
@@ -103,7 +103,7 @@ router.put('/products', async (req, res) => {
   });
   
 
-router.post('/product', async (req, res) => {
+router.post('/delete-product', async (req, res) => {
     const { id } = req.body;
 
     try {

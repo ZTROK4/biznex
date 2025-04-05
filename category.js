@@ -109,7 +109,7 @@ router.get('/categories', async (req, res) => {
                 c.category, 
                 COUNT(p.id) AS product_count
             FROM category c
-            LEFT JOIN products p ON c.category_id = p.category_id
+            LEFT JOIN products p ON c.category = p.category
             GROUP BY c.category_id, c.category
             ORDER BY c.category;
         `;
@@ -129,5 +129,6 @@ router.get('/categories', async (req, res) => {
         return res.status(500).json({ error: 'Failed to fetch categories' });
     }
 });
+
 
 module.exports = router;
