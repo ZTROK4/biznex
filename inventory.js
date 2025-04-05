@@ -36,8 +36,10 @@ router.use(async (req, res, next) => {
 router.post('/add-product', async (req, res) => {
     let { name, category, quantity, barcode, price, type, status } = req.body;
     console.log(req.body);
+
     quantity = parseInt(quantity);
     price = parseFloat(price);
+
     if (
         !name || typeof name !== 'string' ||
         !category || typeof category !== 'string' ||
@@ -50,8 +52,17 @@ router.post('/add-product', async (req, res) => {
         return res.status(400).json({ error: 'Invalid product data' });
     }
 
-
     try {
+   
+        const existing = await req.db.query(
+            'SELECT id FROM products WHERE barcode = $1',
+            [barcode]
+        );
+
+        if (existing.rows.length > 0) {
+            return res.status(409).json({ error: 'Product with this barcode already exists' });
+        }
+
         const result = await req.db.query(
             `INSERT INTO products 
             (name, category, quantity, barcode, price, type, status) 
@@ -70,6 +81,7 @@ router.post('/add-product', async (req, res) => {
         return res.status(500).json({ error: 'Failed to insert product' });
     }
 });
+
 
 router.put('/update-products', async (req, res) => { 
     const { id,name, category, quantity, barcode, price, type, status } = req.body;
