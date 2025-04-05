@@ -260,7 +260,7 @@ router.post('/add-man-transaction', async (req, res) => {
 
         const query = `
             INSERT INTO ${tableName} ( description, amount, ${dateColumn}, type)
-            VALUES ($1, $2, $3, $4)
+            VALUES ($1, $2, $3, $4, $5)
             RETURNING *;
         `;
 
@@ -344,22 +344,10 @@ router.put('/update-man-transaction', async (req, res) => {
 router.get('/manual-transactions', async (req, res) => {
     try {
         const query = `
-            SELECT 
-                'income-' || id AS uid, 
-                id, 
-                description, 
-                amount, 
-                income_date AS date, 
-                'income' AS type
+            SELECT id, description, amount, income_date AS date, 'income' AS type
             FROM man_incomes
             UNION ALL
-            SELECT 
-                'expense-' || id AS uid, 
-                id, 
-                description, 
-                amount, 
-                expense_date AS date, 
-                'expense' AS type
+            SELECT id, description, amount, expense_date AS date, 'expense' AS type
             FROM man_expenses
             ORDER BY date DESC;
         `;
