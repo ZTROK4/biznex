@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const masterPool = require('./master_db');
 const jwt = require('jsonwebtoken');
-
+const pg = require('pg');
 
 router.use(async (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1];
