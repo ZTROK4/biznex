@@ -88,7 +88,7 @@ router.put('/update-pay-acc', async (req, res) => {
     try {
         const { id, account_name, amount, payment_date, payment_method, status } = req.body;
 
-        console.log('Incoming update request:', req.body); // ✅ Debug log here
+
 
         if (!id || !account_name || amount == null|| !payment_date || !payment_method || !status) {
             return res.status(400).json({ error: 'ID and all fields are required' });
@@ -157,7 +157,6 @@ router.put('/update-recv-acc', async (req, res) => {
 router.post('/delete-pay-acc', async (req, res) => {
     try {
         const { id } = req.body;
-        console.log(req.post);
         if (!id) {
             return res.status(400).json({ error: 'Account ID is required' });
         }
@@ -181,8 +180,7 @@ router.post('/delete-pay-acc', async (req, res) => {
 
 router.post('/delete-recv-acc', async (req, res) => {
     try {
-        const { id } = req.params;
-        console.log(req.post);
+        const { id } = req.body;
         if (!id) {
             return res.status(400).json({ error: 'Account ID is required' });
         }
