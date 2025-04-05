@@ -30,7 +30,7 @@ router.use(async (req, res, next) => {
     }
 });
 
-router.post('/category', async (req, res) => {
+router.post('/add-category', async (req, res) => {
     const { category } = req.body;
 
     if (!category || typeof category !== 'string') {
@@ -56,6 +56,50 @@ router.post('/category', async (req, res) => {
         return res.status(500).json({ error: 'Failed to insert category' });
     }
 });
+
+
+router.post('/delete-category', async (req, res) => {
+    const { id } = req.body;
+
+    if (!id) {
+        return res.status(400).json({ error: 'Category ID is required' });
+    }
+
+    try {
+        // Check if any product exists with this category
+        const checkQuery = `
+            SELECT 1 FROM products WHERE category = (
+                SELECT category FROM category WHERE category_id = $1
+            ) LIMIT 1;
+        `;
+        const checkResult = await req.db.query(checkQuery, [id]);
+
+        if (checkResult.rowCount > 0) {
+            return res.status(409).json({
+                success: false,
+                message: 'Cannot delete category: Products are using this category.'
+            });
+        }
+
+        // Proceed with deletion
+        const deleteQuery = 'DELETE FROM category WHERE category_id = $1 RETURNING *';
+        const deleteResult = await req.db.query(deleteQuery, [id]);
+
+        if (deleteResult.rowCount === 0) {
+            return res.status(404).json({ success: false, message: 'Category not found.' });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Category deleted successfully.',
+            category: deleteResult.rows[0]
+        });
+    } catch (error) {
+        console.error("Error deleting category:", error);
+        return res.status(500).json({ error: 'Failed to delete category' });
+    }
+});
+
 
 router.get('/categories', async (req, res) => {
     try {
