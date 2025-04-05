@@ -58,7 +58,7 @@ router.get('/summary/all', async (req, res) => {
         `;
 
         const profitQuery = `
-            WITH income_data AS (
+           WITH income_data AS (
                 SELECT 
                     DATE_TRUNC('week', period) AS week_start,
                     SUM(total_amount) AS total_income
@@ -89,9 +89,11 @@ router.get('/summary/all', async (req, res) => {
             )
             SELECT 
                 COALESCE(
-                    ROUND(
-                        ((current_week.profit - last_week.profit) / NULLIF(last_week.profit, 0)) * 100,
-                        2
+                    LEAST(
+                        ROUND(
+                            ((current_week.profit - last_week.profit) / NULLIF(last_week.profit, 0)) * 100,
+                            2
+                        ), 100
                     ), 0
                 ) AS percent_change
             FROM 
@@ -99,6 +101,7 @@ router.get('/summary/all', async (req, res) => {
             LEFT JOIN 
                 (SELECT profit FROM profit_data ORDER BY week_start DESC OFFSET 1 LIMIT 1) AS last_week
             ON true;
+
         `;
 
         const incomeResult = await req.db.query(incomeQuery);
