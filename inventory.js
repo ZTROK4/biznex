@@ -50,15 +50,14 @@ router.post('/add-product', async (req, res) => {
         return res.status(400).json({ error: 'Invalid product data' });
     }
 
-    const createdAt = moment().format('YYYY-MM-DD HH:mm:ss');
 
     try {
         const result = await req.db.query(
             `INSERT INTO products 
-            (name, category, quantity, barcode, price, type, status, created_at) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
-            RETURNING product_id, name, category, quantity, barcode, price, type, status, created_at`,
-            [name, category, quantity, barcode, price, type, status, createdAt]
+            (name, category, quantity, barcode, price, type, status) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7) 
+            RETURNING id, name, category, quantity, barcode, price, type, status, created_at`,
+            [name, category, quantity, barcode, price, type, status]
         );
 
         return res.status(201).json({
