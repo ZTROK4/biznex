@@ -40,6 +40,7 @@ router.post('/add-salary', async (req, res) => {
       payment_method,
       payment_date
     } = req.body;
+    console.log(req.body);
   
     // Validate required fields
     if (
@@ -104,55 +105,7 @@ router.get('/salaries', async (req, res) => {
     }
 });
 
-router.put('/update-salaries', async (req, res) => {
-    const {id,employee_id, salary_amount, payment_date, salary_month, payment_method } = req.body;
-  
-    if (!employee_id || !salary_amount || !payment_date || !salary_month || !payment_method) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-  
-    try {
-      const result = await req.db.query(
-        `UPDATE salaries 
-         SET employee_id = $1,
-             salary_amount = $2,
-             payment_date = $3,
-             salary_month = $4,
-             payment_method = $5,
-             updated_at = NOW()
-         WHERE id = $6
-         RETURNING *`,
-        [employee_id, salary_amount, payment_date, salary_month, payment_method, id]
-      );
-  
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Salary record not found' });
-      }
-  
-      res.status(200).json({ message: 'Salary updated successfully', salary: result.rows[0] });
-    } catch (error) {
-      console.error('Update error:', error);
-      res.status(500).json({ error: 'Failed to update salary' });
-    }
-  });
-  
-  
-  router.post('/delete-salaries', async (req, res) => {
-    const { id } = req.body;
-  
-    try {
-      const result = await req.db.query(`DELETE FROM salaries WHERE id = $1 RETURNING *`, [id]);
-  
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Salary record not found' });
-      }
-  
-      res.status(200).json({ message: 'Salary deleted successfully' });
-    } catch (error) {
-      console.error('Delete error:', error);
-      res.status(500).json({ error: 'Failed to delete salary' });
-    }
-  });
+
   
   
 
