@@ -344,10 +344,22 @@ router.put('/update-man-transaction', async (req, res) => {
 router.get('/manual-transactions', async (req, res) => {
     try {
         const query = `
-            SELECT id, description, amount, income_date AS date, 'income' AS type
+            SELECT 
+                'income-' || id AS uid, 
+                id, 
+                description, 
+                amount, 
+                income_date AS date, 
+                'income' AS type
             FROM man_incomes
             UNION ALL
-            SELECT id, description, amount, expense_date AS date, 'expense' AS type
+            SELECT 
+                'expense-' || id AS uid, 
+                id, 
+                description, 
+                amount, 
+                expense_date AS date, 
+                'expense' AS type
             FROM man_expenses
             ORDER BY date DESC;
         `;
