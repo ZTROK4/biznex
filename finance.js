@@ -260,7 +260,7 @@ router.post('/add-man-transaction', async (req, res) => {
 
         const query = `
             INSERT INTO ${tableName} ( description, amount, ${dateColumn}, type)
-            VALUES ($1, $2, $3, $4, $5)
+            VALUES ($1, $2, $3, $4)
             RETURNING *;
         `;
 
