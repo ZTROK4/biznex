@@ -284,9 +284,7 @@ router.post('/create-client', async (req, res) => {
                     salary_amount DECIMAL(10,2) NOT NULL CHECK (salary_amount >= 0),
                     payment_date DATE NOT NULL DEFAULT CURRENT_DATE,
                     salary_month DATE NOT NULL,
-                    payment_status salary_status DEFAULT 'pending',
                     payment_method payment_method_salary NOT NULL,
-                    remarks TEXT,
                     created_at TIMESTAMP DEFAULT NOW(),
                     updated_at TIMESTAMP DEFAULT NOW()
                 );

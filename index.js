@@ -18,6 +18,7 @@ const jobClient = require('./job_list');
 const employeeV = require('./employee');
 const categoryV=require('./category');
 const subDomain=require('./subdomain');
+const salaryV -require('./salary');
 
 // JWT Middleware
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
@@ -100,6 +101,7 @@ app.use('/job/client', jobClient);
 app.use('/employee',employeeV);
 app.use('/category',categoryV);
 app.use('/sub',subDomain);
+app.use('/salary',salaryV);
 
 app.get('/protected', (req, res) => {
   const token = req.headers['authorization']?.split(' ')[1]; 
