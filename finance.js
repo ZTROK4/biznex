@@ -88,7 +88,9 @@ router.put('/update-pay-acc', async (req, res) => {
     try {
         const { id, account_name, amount, payment_date, payment_method, status } = req.body;
 
-        if (!id || !account_name || !amount || !payment_date || !payment_method || !status) {
+        console.log('Incoming update request:', req.body); // ✅ Debug log here
+
+        if (!id || !account_name || amount == null|| !payment_date || !payment_method || !status) {
             return res.status(400).json({ error: 'ID and all fields are required' });
         }
 
@@ -103,6 +105,8 @@ router.put('/update-pay-acc', async (req, res) => {
 
         const result = await req.db.query(query, values);
 
+        console.log('Update result:', result); // ✅ Helpful to check DB response
+
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'Payable account not found' });
         }
@@ -114,6 +118,7 @@ router.put('/update-pay-acc', async (req, res) => {
         res.status(500).json({ error: 'Database query failed' });
     }
 });
+
 
 
 
