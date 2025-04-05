@@ -32,7 +32,7 @@ router.use(async (req, res, next) => {
 
 
 
-router.post('/salary', async (req, res) => {
+router.post('/add-salary', async (req, res) => {
     const {
       employee_id,
       salary_amount,
@@ -104,7 +104,7 @@ router.get('/salaries', async (req, res) => {
     }
 });
 
-router.put('/salaries', async (req, res) => {
+router.put('/update-salaries', async (req, res) => {
     const {id,employee_id, salary_amount, payment_date, salary_month, payment_method } = req.body;
   
     if (!employee_id || !salary_amount || !payment_date || !salary_month || !payment_method) {
@@ -137,7 +137,7 @@ router.put('/salaries', async (req, res) => {
   });
   
   
-  router.post('/salaries', async (req, res) => {
+  router.post('/delete-salaries', async (req, res) => {
     const { id } = req.body;
   
     try {
