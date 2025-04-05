@@ -245,7 +245,7 @@ router.get('/accounts', async (req, res) => {
 router.post('/add-man-transaction', async (req, res) => {
     try {
         const { type , description, amount, date } = req.body;
-        console.data(req.body);
+        console.log(req.body);
 
         if (!['income', 'expense'].includes(type)) {
             return res.status(400).json({ error: 'Invalid type. Use "income" or "expense".' });
