@@ -18,7 +18,7 @@ const jobClient = require('./job_list');
 const employeeV = require('./employee');
 const categoryV=require('./category');
 const subDomain=require('./subdomain');
-const salaryV -require('./salary');
+const salaryV =require('./salary');
 
 // JWT Middleware
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
