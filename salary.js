@@ -31,25 +31,36 @@ router.use(async (req, res, next) => {
 });
 
 
-
 router.post('/add-salary', async (req, res) => {
-    const {
+    let {
       employee_id,
       salary_amount,
       salary_month,
       payment_method,
       payment_date
     } = req.body;
-    console.log(req.body);
   
-    // Validate required fields
-    if (
-      !employee_id || !salary_amount || !salary_month || !payment_method
-    ) {
+    salary_month = `${salary_month}-01`; // Format as full date
+  
+    if (!employee_id || !salary_amount || !salary_month || !payment_method) {
       return res.status(400).json({ error: 'Missing required salary data.' });
     }
   
     try {
+      // Fetch employee name
+      const empResult = await req.db.query(
+        'SELECT first_name, last_name FROM employees WHERE id = $1',
+        [employee_id]
+      );
+  
+      if (empResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Employee not found' });
+      }
+  
+      const { first_name, last_name } = empResult.rows[0];
+      const employeeName = `${first_name} ${last_name}`;
+  
+      // Insert salary record
       const result = await req.db.query(
         `INSERT INTO salaries (
            employee_id,
@@ -64,8 +75,15 @@ router.post('/add-salary', async (req, res) => {
           salary_amount,
           salary_month,
           payment_method,
-          payment_date || new Date() // fallback to current date
+          payment_date || new Date()
         ]
+      );
+  
+      // Also insert into man_expenses
+      await req.db.query(
+        `INSERT INTO man_expenses (description, amount, expense_date, type)
+         VALUES ($1, $2, $3, 'salary')`,
+        [`Salary to ${employeeName}`, salary_amount, payment_date || new Date()]
       );
   
       res.status(201).json({
@@ -73,11 +91,13 @@ router.post('/add-salary', async (req, res) => {
         message: 'Salary record added successfully',
         salary: result.rows[0]
       });
+  
     } catch (error) {
       console.error('Error inserting salary:', error);
       res.status(500).json({ error: 'Failed to add salary record' });
     }
-});
+  });
+  
 
 router.get('/salaries', async (req, res) => {
     try {
