@@ -32,7 +32,7 @@ router.use(async (req, res, next) => {
 
 router.post('/add-product', async (req, res) => {
     const { name, category, quantity, barcode, price, type, status } = req.body;
-
+    console.log(req.body);
     if (
         !name || typeof name !== 'string' ||
         !category || typeof category !== 'string' ||
