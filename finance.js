@@ -62,7 +62,7 @@ router.post('/add-pay-acc', async (req, res) => {
 router.post('/add-recv-acc', async (req, res) => {
     try {
         const { account_name, amount, due_date, payment_method, status } = req.body;
-        console.log(account_name,amount,due_date,payment_method,status);
+       
         if (!account_name || !amount || !due_date || !payment_method || !status) {
             return res.status(400).json({ error: 'All fields are required' });
         }
