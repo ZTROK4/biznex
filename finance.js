@@ -154,10 +154,10 @@ router.put('/update-recv-acc', async (req, res) => {
     }
 });
 
-router.delete('/delete-pay-acc/:id', async (req, res) => {
+router.post('/delete-pay-acc', async (req, res) => {
     try {
-        const { id } = req.params;
-        console.log(req.params);
+        const { id } = req.body;
+        console.log(req.post);
         if (!id) {
             return res.status(400).json({ error: 'Account ID is required' });
         }
@@ -179,10 +179,10 @@ router.delete('/delete-pay-acc/:id', async (req, res) => {
     }
 });
 
-router.delete('/delete-recv-acc/:id', async (req, res) => {
+router.post('/delete-recv-acc', async (req, res) => {
     try {
         const { id } = req.params;
-
+        console.log(req.post);
         if (!id) {
             return res.status(400).json({ error: 'Account ID is required' });
         }
