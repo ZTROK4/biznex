@@ -99,14 +99,14 @@ router.post('/add-salary', async (req, res) => {
   });
   
 
-router.get('/salaries', async (req, res) => {
+  router.get('/salaries', async (req, res) => {
     try {
       const query = `
         SELECT 
           CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
           s.salary_amount,
           s.payment_date,
-          s.salary_month,
+          TO_CHAR(s.salary_month, 'Mon YYYY') AS salary_month,
           s.payment_method
         FROM salaries s
         JOIN employees e ON s.employee_id = e.id
@@ -123,11 +123,7 @@ router.get('/salaries', async (req, res) => {
       console.error('Error fetching salary data:', error);
       res.status(500).json({ error: 'Failed to retrieve salary records' });
     }
-});
-
-
+  });
   
-  
-
 
 module.exports = router;
