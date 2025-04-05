@@ -105,7 +105,7 @@ router.post('/add-salary', async (req, res) => {
         SELECT 
           CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
           s.salary_amount,
-          s.payment_date,
+          TO_CHAR(s.payment_date, 'DD/MM/YYYY') AS payment_date,
           TO_CHAR(s.salary_month, 'Mon YYYY') AS salary_month,
           s.payment_method
         FROM salaries s
@@ -124,6 +124,7 @@ router.post('/add-salary', async (req, res) => {
       res.status(500).json({ error: 'Failed to retrieve salary records' });
     }
   });
+  
   
 
 module.exports = router;
