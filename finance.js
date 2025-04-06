@@ -466,8 +466,7 @@ router.get('/web-bills', async (req, res) => {
           p.id AS product_id,
           p.name AS product_name,
           p.price AS product_price,
-          oi.quantity,
-          oi.unit_price
+          oi.quantity
   
         FROM web_bills wb
         LEFT JOIN order_item oi ON wb.order_id = oi.order_id
@@ -481,7 +480,6 @@ router.get('/web-bills', async (req, res) => {
       for (const row of result.rows) {
         const {
           web_bill_id,
-          order_id,
           total_amount,
           payment_status,
           payment_method,
@@ -490,31 +488,26 @@ router.get('/web-bills', async (req, res) => {
           product_name,
           product_price,
           quantity,
-          unit_price
         } = row;
-  
         if (!webBillsMap.has(web_bill_id)) {
-          webBillsMap.set(web_bill_id, {
-            web_bill_id,
-            order_id,
-            total_amount,
-            payment_status,
-            payment_method,
-            generated_at,
-            products: []
-          });
-        }
-  
-        // Only push product if it exists
-        if (product_id) {
-          webBillsMap.get(web_bill_id).products.push({
+            webBillsMap.set(web_bill_id, {
+              bill_id,
+              cart_id,
+              total_amount,
+              payment_status,
+              payment_method,
+              generated_at,
+              products: []
+            });
+          }
+        webBillsMap.get(web_bill_id).products.push({
             product_id,
             name: product_name,
             price: product_price,
-            quantity,
-            unit_price
+            quantity
           });
-        }
+  
+        
       }
   
       res.status(200).json(Array.from(webBillsMap.values()));
