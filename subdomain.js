@@ -96,9 +96,14 @@ router.get("/api/store", async (req, res) => {
 
 router.get("/products", async (req, res) => {
     try {
-      const query = "SELECT * FROM products WHERE status = 'active';";
+      const query = `
+        SELECT * FROM products 
+        WHERE status = 'Active' 
+          AND type IN ('Online', 'Both');
+      `;
+      
       const { rows } = await req.db.query(query);
-
+  
       if (rows.length === 0) {
         return res.status(404).json({ error: "Store data not found." });
       }
@@ -109,7 +114,8 @@ router.get("/products", async (req, res) => {
       console.error("❌ Database Error:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
-});
+  });
+  
 
 module.exports = router;
 

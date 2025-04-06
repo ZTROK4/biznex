@@ -131,5 +131,22 @@ router.post('/cart/checkout', async (req, res) => {
     }
 });
 
+router.get('/products', async (req, res) => {
+    try {
+      const query = `
+        SELECT * FROM products
+        WHERE status = 'Active'
+          AND type IN ('Offline', 'Hybrid')
+        ORDER BY created_at DESC;
+      `;
+  
+      const result = await req.db.query(query);
+      res.status(200).json({ success: true, products: result.rows });
+    } catch (error) {
+      console.error('Error fetching filtered products:', error);
+      res.status(500).json({ error: 'Failed to fetch products' });
+    }
+  });
+  
 
 module.exports = router;

@@ -34,7 +34,7 @@ router.use(async (req, res, next) => {
 });
 
 router.post('/add-product', async (req, res) => {
-    let { name, category, quantity, barcode, price, type, status } = req.body;
+    let { name, category, quantity, barcode, price, type, status,imageUrl } = req.body;
     console.log(req.body);
 
     quantity = parseInt(quantity);
@@ -65,10 +65,10 @@ router.post('/add-product', async (req, res) => {
 
         const result = await req.db.query(
             `INSERT INTO products 
-            (name, category, quantity, barcode, price, type, status) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7) 
+            (name, category, quantity, barcode, price, type, status,imageUrl) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7,$8) 
             RETURNING id, name, category, quantity, barcode, price, type, status, created_at`,
-            [name, category, quantity, barcode, price, type, status]
+            [name, category, quantity, barcode, price, type, status,imageUrl]
         );
 
         return res.status(201).json({
