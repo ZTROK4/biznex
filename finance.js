@@ -452,38 +452,76 @@ router.get('/web-bills', async (req, res) => {
   
   
 
-  router.get('/web-bills/products', async (req, res) => {
-    const { orderId } = req.params;
-  
+  router.get('/web-bills', async (req, res) => {
     try {
       const query = `
         SELECT 
-          oi.order_item_id,
-          oi.quantity,
-          oi.unit_price,
+          wb.web_bill_id,
+          wb.total_amount,
+          wb.payment_status,
+          wb.payment_method,
+          TO_CHAR(wb.generated_at, 'DD-MM-YYYY') AS generated_at,
+          wb.order_id,
+  
           p.id AS product_id,
-          p.name,
-          p.price,
-          p.description,
-          p.barcode,
-          p.category,
-          p.status,
-          p.bestseller,
-          p.imageUrl,
-          p.type
-        FROM order_item oi
+          p.name AS product_name,
+          p.price AS product_price,
+          oi.quantity,
+          oi.unit_price
+  
+        FROM web_bills wb
+        JOIN order_item oi ON wb.order_id = oi.order_id
         JOIN products p ON oi.product_id = p.id
-        WHERE oi.order_id = $1
+        ORDER BY wb.generated_at DESC;
       `;
   
-      const result = await req.db.query(query, [orderId]);
-      res.status(200).json({ order_id: orderId, items: result.rows });
+      const result = await req.db.query(query);
   
+      const webBillsMap = new Map();
+  
+      for (const row of result.rows) {
+        const {
+          web_bill_id,
+          order_id,
+          total_amount,
+          payment_status,
+          payment_method,
+          generated_at,
+          product_id,
+          product_name,
+          product_price,
+          quantity,
+          unit_price
+        } = row;
+  
+        if (!webBillsMap.has(web_bill_id)) {
+          webBillsMap.set(web_bill_id, {
+            web_bill_id,
+            order_id,
+            total_amount,
+            payment_status,
+            payment_method,
+            generated_at,
+            products: []
+          });
+        }
+  
+        webBillsMap.get(web_bill_id).products.push({
+          product_id,
+          name: product_name,
+          price: product_price,
+          quantity,
+          unit_price
+        });
+      }
+  
+      res.status(200).json(Array.from(webBillsMap.values()));
     } catch (error) {
-      console.error('Error retrieving order items:', error);
-      res.status(500).json({ error: 'Failed to retrieve web bill items' });
+      console.error('Error retrieving web bills with products:', error);
+      res.status(500).json({ error: 'Failed to retrieve web bills' });
     }
   });
+  
 
   
   
