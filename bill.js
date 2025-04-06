@@ -97,6 +97,17 @@ router.post('/cart/checkout', async (req, res) => {
             [cartId, totalPrice, payment_status, payment_method]
         );
 
+        await client.query(
+            `INSERT INTO man_incomes (type, description, amount, payment_method, income_date)
+             VALUES ($1, $2, $3, $4, $5)`,
+            [
+                'Sale',
+                `Bill for cart_id ${cartId}`,
+                totalPrice,
+                payment_method,
+                new Date() 
+            ]
+        );
         await client.query('COMMIT');
 
         res.status(201).json({
