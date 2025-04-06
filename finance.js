@@ -389,7 +389,7 @@ router.get('/web-bills', async (req, res) => {
           b.total_amount,
           b.payment_status,
           b.payment_method,
-          b.generated_at,
+        TO_CHAR(b.generated_at, 'DD-MM-YYYY') AS generated_at,
           b.cart_id,
   
           p.id AS product_id,
