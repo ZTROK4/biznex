@@ -39,7 +39,7 @@ router.post('/add-salary', async (req, res) => {
       payment_method,
       payment_date
     } = req.body;
-  
+    console.log(req.body);
     salary_month = `${salary_month}-01`; // Format as full date
   
     if (!employee_id || !salary_amount || !salary_month || !payment_method) {
