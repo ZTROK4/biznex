@@ -84,7 +84,9 @@ router.post('/add-product', async (req, res) => {
 
 
 router.put('/update-products', async (req, res) => { 
-    const { id,name, category, quantity, barcode, price, type, status } = req.body;
+    let { id,name, category, quantity, barcode, price, type, status } = req.body;
+    quantity = parseInt(quantity);
+    price =parseFloat(price);
     console.log(req.body);
     if (
       !name || typeof name !== 'string' ||
