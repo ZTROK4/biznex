@@ -491,8 +491,8 @@ router.get('/web-bills', async (req, res) => {
         } = row;
         if (!webBillsMap.has(web_bill_id)) {
             webBillsMap.set(web_bill_id, {
-              bill_id,
-              cart_id,
+              web_bill_id,
+              order_id,
               total_amount,
               payment_status,
               payment_method,
