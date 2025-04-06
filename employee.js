@@ -132,6 +132,8 @@ router.put('/employees/update', async (req, res) => {
     try {
         const {
             id,
+            first_name,
+            last_name,
             salary,
             position,
             email,
