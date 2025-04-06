@@ -398,7 +398,7 @@ router.get('/web-bills', async (req, res) => {
           ci.quantity
   
         FROM bills b
-        JOIN cart_items ci ON b.cart_id = ci.cart_id
+        JOIN cart_item ci ON b.cart_id = ci.cart_id
         JOIN products p ON ci.product_id = p.id
         ORDER BY b.generated_at DESC;
       `;
