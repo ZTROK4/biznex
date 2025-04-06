@@ -33,25 +33,60 @@ router.use(async (req, res, next) => {
 router.post('/employees/add', async (req, res) => {
     try {
         const {
-            first_name, last_name, email, phone, position,
-            salary, bank_name, bank_account_number, ifsc_code,joining_date
+            first_name,
+            last_name,
+            email,
+            phone,
+            position,
+            salary,
+            bank_name,
+            bank_account_number,
+            ifsc_code,
+            joining_date
         } = req.body;
 
-        if (!first_name || !last_name || !email || !phone || !position ||
-            !salary || !bank_name || !bank_account_number || !ifsc_code|| !joining_date) {
+        // Basic validation
+        if (
+            !first_name || !last_name || !email || !phone || !position ||
+            !salary || !bank_name || !bank_account_number || !ifsc_code || !joining_date
+        ) {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
-        const query = `
+        // Check for duplicates
+        const duplicateQuery = `
+            SELECT * FROM employees
+            WHERE email = $1 OR phone = $2 OR bank_account_number = $3
+            LIMIT 1;
+        `;
+        const duplicateResult = await req.db.query(duplicateQuery, [email, phone, bank_account_number]);
+
+        if (duplicateResult.rows.length > 0) {
+            const existing = duplicateResult.rows[0];
+            const conflicts = [];
+
+            if (existing.email === email) conflicts.push('Email');
+            if (existing.phone === phone) conflicts.push('Phone');
+            if (existing.bank_account_number === bank_account_number) conflicts.push('Bank Account Number');
+
+            return res.status(409).json({
+                error: `${conflicts.join(', ')} already exists`
+            });
+        }
+
+        // Insert new employee
+        const insertQuery = `
             INSERT INTO employees (
                 first_name, last_name, email, phone, position,
-                salary, bank_name, bank_account_number, ifsc_code,joining_date
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9,$10)
+                salary, bank_name, bank_account_number, ifsc_code, joining_date
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             RETURNING *;
         `;
-
-        const values = [first_name, last_name, email, phone, position, salary, bank_name, bank_account_number, ifsc_code,joining_date];
-        const result = await req.db.query(query, values);
+        const values = [
+            first_name, last_name, email, phone, position,
+            salary, bank_name, bank_account_number, ifsc_code, joining_date
+        ];
+        const result = await req.db.query(insertQuery, values);
 
         res.status(201).json({ message: 'Employee added', employee: result.rows[0] });
 
@@ -61,9 +96,28 @@ router.post('/employees/add', async (req, res) => {
     }
 });
 
+
 router.get('/employees', async (req, res) => {
     try {
-        const query = `SELECT * FROM employees ORDER BY created_at DESC;`;
+        const query = `
+            SELECT 
+                id,
+                first_name,
+                last_name,
+                email,
+                phone,
+                position,
+                salary,
+                bank_name,
+                bank_account_number,
+                ifsc_code,
+                TO_CHAR(joining_date, 'DD//MM//YYYY') AS joining_date,
+                created_at,
+                updated_at
+            FROM employees
+            ORDER BY created_at DESC;
+        `;
+
         const result = await req.db.query(query);
 
         res.status(200).json({ employees: result.rows });
@@ -73,7 +127,8 @@ router.get('/employees', async (req, res) => {
     }
 });
 
-router.put('/employees', async (req, res) => {
+
+router.put('/employees/update', async (req, res) => {
     try {
         const {
             id,
