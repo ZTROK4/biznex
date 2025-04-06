@@ -371,7 +371,7 @@ router.get('/web-bills', async (req, res) => {
     }
   });
 
-  router.get('/bills', async (req, res) => {
+ /* router.get('/bills', async (req, res) => {
     try {
       const result = await req.db.query('SELECT * FROM bills ORDER BY generated_at DESC');
       res.status(200).json(result.rows);
@@ -379,9 +379,9 @@ router.get('/web-bills', async (req, res) => {
       console.error('Error fetching bills:', err);
       res.status(500).json({ error: 'Failed to fetch bills' });
     }
-  });
+  });*/
 
-  router.get('/bills/products/:cartId', async (req, res) => {
+  router.get('/bills', async (req, res) => {
     const { cartId } = req.params;
   
     try {
