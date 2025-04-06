@@ -382,8 +382,6 @@ router.get('/web-bills', async (req, res) => {
   });*/
 
   router.get('/bills', async (req, res) => {
-    const { cartId } = req.params;
-  
     try {
       const query = `
         SELECT 
@@ -392,46 +390,66 @@ router.get('/web-bills', async (req, res) => {
           b.payment_status,
           b.payment_method,
           b.generated_at,
-          
+          b.cart_id,
+  
           p.id AS product_id,
-          p.name,
-          p.price,
+          p.name AS product_name,
+          p.price AS product_price,
           ci.quantity
   
-        FROM cart_item ci
+        FROM bills b
+        JOIN cart_items ci ON b.cart_id = ci.cart_id
         JOIN products p ON ci.product_id = p.id
-        JOIN bills b ON ci.cart_id = b.cart_id
-        WHERE ci.cart_id = $1
+        ORDER BY b.generated_at DESC;
       `;
   
-      const result = await req.db.query(query, [cartId]);
+      const result = await req.db.query(query);
   
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'No bill or products found for this cart' });
+      // Group by bill_id
+      const billsMap = new Map();
+  
+      for (const row of result.rows) {
+        const {
+          bill_id,
+          cart_id,
+          total_amount,
+          payment_status,
+          payment_method,
+          generated_at,
+          product_id,
+          product_name,
+          product_price,
+          quantity
+        } = row;
+  
+        if (!billsMap.has(bill_id)) {
+          billsMap.set(bill_id, {
+            bill_id,
+            cart_id,
+            total_amount,
+            payment_status,
+            payment_method,
+            generated_at,
+            products: []
+          });
+        }
+  
+        billsMap.get(bill_id).products.push({
+          product_id,
+          name: product_name,
+          price: product_price,
+          quantity
+        });
       }
   
-      const { bill_id, total_amount, payment_status, payment_method } = result.rows[0];
-  
-      const products = result.rows.map(row => ({
-        product_id: row.product_id,
-        name: row.name,
-        price: row.price,
-        quantity: row.quantity
-      }));
-  
-      res.status(200).json({
-        bill_id,
-        total_amount,
-        payment_status,
-        payment_method,
-        products
-      });
-  
+      res.status(200).json(Array.from(billsMap.values()));
     } catch (error) {
-      console.error('Error retrieving bill with products:', error);
-      res.status(500).json({ error: 'Failed to retrieve bill details' });
+      console.error('Error retrieving all bills with products:', error);
+      res.status(500).json({ error: 'Failed to retrieve bills' });
     }
   });
+  
+  
   
 
   router.get('/web-bills/products', async (req, res) => {
