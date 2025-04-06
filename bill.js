@@ -48,7 +48,7 @@ router.post('/cart/checkout', async (req, res) => {
         await client.query('BEGIN');
 
         // 1. Create cart
-        const cartResult = await client.query(
+        const cartResult = await req.db.query(
             `INSERT INTO cart (total_price, status) VALUES ($1, $2) RETURNING cart_id, created_at`,
             [totalPrice, status]
         );
@@ -59,7 +59,7 @@ router.post('/cart/checkout', async (req, res) => {
             const { product_id, quantity, unit_price } = item;
 
             // Check product stock
-            const stockResult = await client.query(
+            const stockResult = await req.db.query(
                 `SELECT quantity FROM products WHERE id = $1 FOR UPDATE`,
                 [product_id]
             );
@@ -77,27 +77,27 @@ router.post('/cart/checkout', async (req, res) => {
             }
 
             // Insert cart item
-            await client.query(
+            await req.db.query(
                 `INSERT INTO cart_item (cart_id, product_id, quantity, unit_price)
                  VALUES ($1, $2, $3, $4)`,
                 [cartId, product_id, quantity, unit_price]
             );
 
             // Decrement stock
-            await client.query(
+            await req.db.query(
                 `UPDATE products SET quantity = quantity - $1 WHERE id = $2`,
                 [quantity, product_id]
             );
         }
 
         // 3. Create bill
-        const billResult = await client.query(
+        const billResult = await req.db.query(
             `INSERT INTO bills (cart_id, total_amount, payment_status, payment_method)
              VALUES ($1, $2, $3, $4) RETURNING *`,
             [cartId, totalPrice, payment_status, payment_method]
         );
 
-        await client.query(
+        await req.db.query(
             `INSERT INTO man_incomes (type, description, amount, payment_method, income_date)
              VALUES ($1, $2, $3, $4, $5)`,
             [
@@ -108,7 +108,7 @@ router.post('/cart/checkout', async (req, res) => {
                 new Date() 
             ]
         );
-        await client.query('COMMIT');
+        await req.db.query('COMMIT');
 
         res.status(201).json({
             message: 'Checkout successful',
