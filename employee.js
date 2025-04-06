@@ -34,23 +34,23 @@ router.post('/employees/add', async (req, res) => {
     try {
         const {
             first_name, last_name, email, phone, position,
-            salary, bank_name, bank_account_number, ifsc_code
+            salary, bank_name, bank_account_number, ifsc_code,joining_date
         } = req.body;
 
         if (!first_name || !last_name || !email || !phone || !position ||
-            !salary || !bank_name || !bank_account_number || !ifsc_code) {
+            !salary || !bank_name || !bank_account_number || !ifsc_code|| !joining_date) {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
         const query = `
             INSERT INTO employees (
                 first_name, last_name, email, phone, position,
-                salary, bank_name, bank_account_number, ifsc_code
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                salary, bank_name, bank_account_number, ifsc_code,joining_date
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9,$10)
             RETURNING *;
         `;
 
-        const values = [first_name, last_name, email, phone, position, salary, bank_name, bank_account_number, ifsc_code];
+        const values = [first_name, last_name, email, phone, position, salary, bank_name, bank_account_number, ifsc_code,joining_date];
         const result = await req.db.query(query, values);
 
         res.status(201).json({ message: 'Employee added', employee: result.rows[0] });
@@ -73,13 +73,22 @@ router.get('/employees', async (req, res) => {
     }
 });
 
-router.put('/employees/:id', async (req, res) => {
+router.put('/employees', async (req, res) => {
     try {
-        const { id } = req.params;
-        const { salary, position, email, phone, bank_name, bank_account_number, ifsc_code } = req.body;
+        const {
+            id,
+            salary,
+            position,
+            email,
+            phone,
+            bank_name,
+            bank_account_number,
+            ifsc_code,
+            joining_date
+        } = req.body;
 
-        if (!salary && !position && !email && !phone && !bank_name && !bank_account_number && !ifsc_code) {
-            return res.status(400).json({ error: 'No fields provided for update' });
+        if (!id) {
+            return res.status(400).json({ error: 'Employee ID is required' });
         }
 
         const updates = [];
@@ -90,36 +99,46 @@ router.put('/employees/:id', async (req, res) => {
             updates.push(`salary = $${index++}`);
             values.push(salary);
         }
-        if (position) {
+        if (position !== undefined) {
             updates.push(`position = $${index++}`);
             values.push(position);
         }
-        if (email) {
+        if (email !== undefined) {
             updates.push(`email = $${index++}`);
             values.push(email);
         }
-        if (phone) {
+        if (phone !== undefined) {
             updates.push(`phone = $${index++}`);
             values.push(phone);
         }
-        if (bank_name) {
+        if (bank_name !== undefined) {
             updates.push(`bank_name = $${index++}`);
             values.push(bank_name);
         }
-        if (bank_account_number) {
+        if (bank_account_number !== undefined) {
             updates.push(`bank_account_number = $${index++}`);
             values.push(bank_account_number);
         }
-        if (ifsc_code) {
+        if (ifsc_code !== undefined) {
             updates.push(`ifsc_code = $${index++}`);
             values.push(ifsc_code);
         }
+        if (joining_date !== undefined) {
+            updates.push(`joining_date = $${index++}`);
+            values.push(joining_date);
+        }
 
-        values.push(id); 
+        if (updates.length === 0) {
+            return res.status(400).json({ error: 'No fields provided for update' });
+        }
 
+        // Add updated_at column update
+        updates.push(`updated_at = NOW()`);
+
+        values.push(id); // ID as the last parameter
         const query = `
             UPDATE employees
-            SET ${updates.join(', ')}, updated_at = NOW()
+            SET ${updates.join(', ')}
             WHERE id = $${index}
             RETURNING *;
         `;
@@ -137,5 +156,23 @@ router.put('/employees/:id', async (req, res) => {
         res.status(500).json({ error: 'Database update failed', details: error.message });
     }
 });
+
+router.post('/delete-employee', async (req, res) => {
+    try {
+        const { id } = req.body;
+
+        const result = await req.db.query('DELETE FROM employees WHERE id = $1 RETURNING *;', [id]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Employee not found' });
+        }
+
+        res.json({ message: 'Employee deleted successfully', employee: result.rows[0] });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Database delete failed', details: error.message });
+    }
+});
+
 
 module.exports = router;
