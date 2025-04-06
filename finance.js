@@ -470,13 +470,12 @@ router.get('/web-bills', async (req, res) => {
           oi.unit_price
   
         FROM web_bills wb
-        JOIN order_item oi ON wb.order_id = oi.order_id
-        JOIN products p ON oi.product_id = p.id
+        LEFT JOIN order_item oi ON wb.order_id = oi.order_id
+        LEFT JOIN products p ON oi.product_id = p.id
         ORDER BY wb.generated_at DESC;
       `;
   
       const result = await req.db.query(query);
-  
       const webBillsMap = new Map();
   
       for (const row of result.rows) {
@@ -506,13 +505,16 @@ router.get('/web-bills', async (req, res) => {
           });
         }
   
-        webBillsMap.get(web_bill_id).products.push({
-          product_id,
-          name: product_name,
-          price: product_price,
-          quantity,
-          unit_price
-        });
+        // Only push product if it exists
+        if (product_id) {
+          webBillsMap.get(web_bill_id).products.push({
+            product_id,
+            name: product_name,
+            price: product_price,
+            quantity,
+            unit_price
+          });
+        }
       }
   
       res.status(200).json(Array.from(webBillsMap.values()));
@@ -521,6 +523,9 @@ router.get('/web-bills', async (req, res) => {
       res.status(500).json({ error: 'Failed to retrieve web bills' });
     }
   });
+  
+  
+    
   
 
   
