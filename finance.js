@@ -480,6 +480,7 @@ router.get('/web-bills', async (req, res) => {
       for (const row of result.rows) {
         const {
           web_bill_id,
+          order_id,
           total_amount,
           payment_status,
           payment_method,
@@ -489,25 +490,29 @@ router.get('/web-bills', async (req, res) => {
           product_price,
           quantity,
         } = row;
+  
+        // Initialize web bill if not already present
         if (!webBillsMap.has(web_bill_id)) {
-            webBillsMap.set(web_bill_id, {
-              web_bill_id,
-              order_id,
-              total_amount,
-              payment_status,
-              payment_method,
-              generated_at,
-              products: []
-            });
-          }
-        webBillsMap.get(web_bill_id).products.push({
+          webBillsMap.set(web_bill_id, {
+            web_bill_id,
+            order_id,
+            total_amount,
+            payment_status,
+            payment_method,
+            generated_at,
+            products: []
+          });
+        }
+  
+        // Only push if product exists (prevent null values if joins fail)
+        if (product_id) {
+          webBillsMap.get(web_bill_id).products.push({
             product_id,
             name: product_name,
             price: product_price,
             quantity
           });
-  
-        
+        }
       }
   
       res.status(200).json(Array.from(webBillsMap.values()));
@@ -516,6 +521,7 @@ router.get('/web-bills', async (req, res) => {
       res.status(500).json({ error: 'Failed to retrieve web bills' });
     }
   });
+  
   
   
     
