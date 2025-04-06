@@ -391,6 +391,7 @@ router.get('/web-bills', async (req, res) => {
           b.total_amount,
           b.payment_status,
           b.payment_method,
+          b.generated_at,
           
           p.id AS product_id,
           p.name,
