@@ -381,35 +381,54 @@ router.get('/web-bills', async (req, res) => {
     }
   });
 
-  router.get('/bills/products', async (req, res) => {
+  router.get('/bills/products/:cartId', async (req, res) => {
     const { cartId } = req.params;
   
     try {
       const query = `
         SELECT 
-          ci.id AS cart_item_id,
-          ci.quantity,
+          b.bill_id,
+          b.total_amount,
+          b.payment_status,
+          b.payment_method,
+          
           p.id AS product_id,
           p.name,
           p.price,
-          p.description,
-          p.barcode,
-          p.category,
-          p.status,
-          p.bestseller,
-          p.imageUrl,
-          p.type
-        FROM cart_items ci
+          ci.quantity
+  
+        FROM cart_item ci
         JOIN products p ON ci.product_id = p.id
+        JOIN bills b ON ci.cart_id = b.cart_id
         WHERE ci.cart_id = $1
       `;
   
       const result = await req.db.query(query, [cartId]);
-      res.status(200).json({ cart_id: cartId, items: result.rows });
+  
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'No bill or products found for this cart' });
+      }
+  
+      const { bill_id, total_amount, payment_status, payment_method } = result.rows[0];
+  
+      const products = result.rows.map(row => ({
+        product_id: row.product_id,
+        name: row.name,
+        price: row.price,
+        quantity: row.quantity
+      }));
+  
+      res.status(200).json({
+        bill_id,
+        total_amount,
+        payment_status,
+        payment_method,
+        products
+      });
   
     } catch (error) {
-      console.error('Error retrieving cart items:', error);
-      res.status(500).json({ error: 'Failed to retrieve cart items' });
+      console.error('Error retrieving bill with products:', error);
+      res.status(500).json({ error: 'Failed to retrieve bill details' });
     }
   });
   
