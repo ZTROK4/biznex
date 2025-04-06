@@ -148,10 +148,36 @@ router.put('/employees/update', async (req, res) => {
             return res.status(400).json({ error: 'Employee ID is required' });
         }
 
+        // Optional: Check if email, phone, or bank_account_number already exists for another employee
+        if (email || phone || bank_account_number) {
+            const conflictQuery = `
+                SELECT * FROM employees 
+                WHERE id <> $1 AND (email = $2 OR phone = $3 OR bank_account_number = $4)
+                LIMIT 1;
+            `;
+            const conflictCheck = await req.db.query(conflictQuery, [id, email, phone, bank_account_number]);
+            if (conflictCheck.rows.length > 0) {
+                const existing = conflictCheck.rows[0];
+                const conflicts = [];
+                if (existing.email === email) conflicts.push('Email');
+                if (existing.phone === phone) conflicts.push('Phone');
+                if (existing.bank_account_number === bank_account_number) conflicts.push('Bank Account Number');
+                return res.status(409).json({ error: `${conflicts.join(', ')} already exists for another employee.` });
+            }
+        }
+
         const updates = [];
         const values = [];
         let index = 1;
 
+        if (first_name !== undefined) {
+            updates.push(`first_name = $${index++}`);
+            values.push(first_name);
+        }
+        if (last_name !== undefined) {
+            updates.push(`last_name = $${index++}`);
+            values.push(last_name);
+        }
         if (salary !== undefined) {
             updates.push(`salary = $${index++}`);
             values.push(salary);
@@ -189,10 +215,10 @@ router.put('/employees/update', async (req, res) => {
             return res.status(400).json({ error: 'No fields provided for update' });
         }
 
-        // Add updated_at column update
+        // Add updated_at
         updates.push(`updated_at = NOW()`);
 
-        values.push(id); // ID as the last parameter
+        values.push(id); // ID as the final param
         const query = `
             UPDATE employees
             SET ${updates.join(', ')}
