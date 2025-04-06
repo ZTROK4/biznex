@@ -41,7 +41,6 @@ router.post('/cart/checkout', async (req, res) => {
 
         const { payment_status, payment_method } = bill;
 
-        // Calculate total price
         const totalPrice = items.reduce((sum, item) => {
             return sum + item.quantity * item.unit_price;
         }, 0);
@@ -55,14 +54,39 @@ router.post('/cart/checkout', async (req, res) => {
         );
         const cartId = cartResult.rows[0].cart_id;
 
-        // 2. Insert cart_items
+        // 2. Loop through items
         for (const item of items) {
             const { product_id, quantity, unit_price } = item;
 
+            // Check product stock
+            const stockResult = await client.query(
+                `SELECT quantity FROM products WHERE id = $1 FOR UPDATE`,
+                [product_id]
+            );
+
+            if (stockResult.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(404).json({ error: `Product ID ${product_id} not found` });
+            }
+
+            const currentStock = stockResult.rows[0].quantity;
+
+            if (currentStock < quantity) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({ error: `Insufficient stock for product ID ${product_id}` });
+            }
+
+            // Insert cart item
             await client.query(
                 `INSERT INTO cart_item (cart_id, product_id, quantity, unit_price)
                  VALUES ($1, $2, $3, $4)`,
                 [cartId, product_id, quantity, unit_price]
+            );
+
+            // Decrement stock
+            await client.query(
+                `UPDATE products SET quantity = quantity - $1 WHERE id = $2`,
+                [quantity, product_id]
             );
         }
 
@@ -95,3 +119,6 @@ router.post('/cart/checkout', async (req, res) => {
         client.release();
     }
 });
+
+
+module.exports = router;
