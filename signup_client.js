@@ -275,7 +275,8 @@ router.post('/create-client', async (req, res) => {
                     bank_account_number VARCHAR(50) UNIQUE NOT NULL,
                     ifsc_code VARCHAR(11) NOT NULL,
                     created_at TIMESTAMP DEFAULT NOW(),
-                    updated_at TIMESTAMP DEFAULT NOW()
+                    updated_at TIMESTAMP DEFAULT NOW(),
+                    joining_date DATE
                 );
 
                 CREATE TABLE salaries (
