@@ -1,25 +1,21 @@
-const AWS = require('aws-sdk');
-require('dotenv').config();
-
-
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY,
-  secretAccessKey: process.env.AWS_SECRET_KEY,
-  region: process.env.AWS_REGION,
-});
-
 router.get('/generate-upload-url', async (req, res) => {
-  const fileName = req.query.fileName;
-  const fileType = req.query.fileType;
+  const { fileName, fileType, folder = 'uploads' } = req.query;
+
+  const key = `${folder}/${Date.now()}-${fileName}`;
 
   const params = {
     Bucket: 'your-bucket-name',
-    Key: `uploads/${Date.now()}-${fileName}`,
+    Key: key,
     ContentType: fileType,
     ACL: 'public-read',
-    Expires: 60, // expires in 60 seconds
+    Expires: 60, // URL expires in 60 seconds
   };
 
-  const uploadURL = await s3.getSignedUrlPromise('putObject', params);
-  res.send({ uploadURL, key: params.Key });
+  try {
+    const uploadURL = await s3.getSignedUrlPromise('putObject', params);
+    res.send({ uploadURL, key });
+  } catch (err) {
+    console.error('Error generating signed URL:', err);
+    res.status(500).json({ error: 'Failed to generate upload URL' });
+  }
 });
