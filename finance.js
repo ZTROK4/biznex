@@ -447,22 +447,23 @@ router.get('/manual-transactions', async (req, res) => {
   router.get('/web-bills', async (req, res) => {
     try {
       const query = `
-        SELECT
-    wb.web_bill_id,
-    wb.total_amount,
-    wb.payment_status,
-    wb.payment_method,
-    TO_CHAR(wb.generated_at, 'DD-MM-YYYY') AS generated_at,
-    wb.order_id,
-    p.id AS product_id,
-    p.name AS product_name,
-    p.price AS product_price,
-    oi.quantity
-    FROM web_bills wb
-    JOIN order_item oi ON wb.order_id = oi.order_id
-    JOIN products p ON oi.product_id = p.id
-    ORDER BY wb.generated_at DESC;
-      `;
+      SELECT
+        wb.web_bill_id,
+        wb.total_amount,
+        wb.payment_status,
+        wb.payment_method,
+        TO_CHAR(wb.generated_at, 'DD-MM-YYYY') AS generated_at,
+        wb.order_id,
+        p.id AS product_id,
+        p.name AS product_name,
+        p.price AS product_price,
+        oi.quantity
+      FROM web_bills wb
+      JOIN order_item oi ON wb.order_id = oi.order_id
+      JOIN products p ON oi.product_id = p.id
+      ORDER BY wb.generated_at DESC;
+    `;
+
   
       const result = await req.db.query(query);
       const webBillsMap = new Map();
