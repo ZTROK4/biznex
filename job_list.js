@@ -144,10 +144,10 @@ router.get('/get_jobs_with_applicants', async (req, res) => {
                 quali_1, 
                 quali_2 
             FROM job_list 
-            WHERE client_id = $1;`,
-            [client_id]
+            WHERE client_id = $1 AND status = $2;`,
+            [client_id, 'open']  // Assuming you want only open jobs
         );
-
+        
         if (jobsResult.rows.length === 0) {
             return res.status(404).json({ error: "No jobs found for this user" });
         }

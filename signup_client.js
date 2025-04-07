@@ -297,13 +297,7 @@ router.post('/create-client', async (req, res) => {
                   created_at TIMESTAMP DEFAULT NOW()
                 );
           
-                CREATE TABLE cart_logs (
-                  log_id SERIAL PRIMARY KEY,
-                  cart_id INT NOT NULL,
-                  status cart_log_status,
-                  updated_at TIMESTAMP DEFAULT NOW(),
-                  CONSTRAINT fk_cart_log FOREIGN KEY (cart_id) REFERENCES cart(cart_id)
-                );
+                
 
                 CREATE TABLE cart_item (
                   cart_item_id SERIAL PRIMARY KEY,
@@ -325,13 +319,7 @@ router.post('/create-client', async (req, res) => {
                   CONSTRAINT fk_cart_bill FOREIGN KEY (cart_id) REFERENCES cart(cart_id)
                 );
           
-                CREATE TABLE bill_logs (
-                  bill_log_id SERIAL PRIMARY KEY,
-                  bill_id INT NOT NULL,
-                  status bill_log_status,
-                  updated_at TIMESTAMP DEFAULT NOW(),
-                  CONSTRAINT fk_bill FOREIGN KEY (bill_id) REFERENCES bills(bill_id)
-                );
+                
           
                 CREATE TABLE web_bills (
                   web_bill_id SERIAL PRIMARY KEY,
@@ -344,13 +332,7 @@ router.post('/create-client', async (req, res) => {
                 );
 
           
-                CREATE TABLE web_bill_logs (
-                  web_log_id SERIAL PRIMARY KEY,
-                  bill_id INT NOT NULL,
-                  status web_bill_log_status,
-                  updated_at TIMESTAMP DEFAULT NOW(),
-                  CONSTRAINT fk_web_bill FOREIGN KEY (bill_id) REFERENCES web_bills(web_bill_id)
-                );
+              
 
           
                 CREATE TABLE orders (
@@ -360,13 +342,7 @@ router.post('/create-client', async (req, res) => {
                   created_at TIMESTAMP DEFAULT NOW()
                 );
           
-                CREATE TABLE order_logs (
-                  log_id SERIAL PRIMARY KEY,
-                  order_id INT NOT NULL,
-                  status order_log_status,
-                  updated_at TIMESTAMP DEFAULT NOW(),
-                  CONSTRAINT fk_order_log FOREIGN KEY (order_id) REFERENCES orders(order_id)
-                );
+                
                 
                 CREATE TABLE order_item (
                     order_item_id SERIAL PRIMARY KEY,
@@ -453,49 +429,6 @@ router.post('/create-client', async (req, res) => {
 
                 -- Trigger functions for logs
           
-                CREATE OR REPLACE FUNCTION log_cart_changes() RETURNS TRIGGER AS $$
-                BEGIN
-                  INSERT INTO cart_logs(cart_id, status) VALUES (NEW.cart_id, NEW.status);
-                  RETURN NEW;
-                END;
-                $$ LANGUAGE plpgsql;
-          
-                CREATE TRIGGER cart_log_trigger
-                AFTER INSERT OR UPDATE ON cart
-                FOR EACH ROW EXECUTE FUNCTION log_cart_changes();
-          
-                CREATE OR REPLACE FUNCTION log_bill_changes() RETURNS TRIGGER AS $$
-                BEGIN
-                  INSERT INTO bill_logs(bill_id, status) VALUES (NEW.bill_id, NEW.payment_status);
-                  RETURN NEW;
-                END;
-                $$ LANGUAGE plpgsql;
-          
-                CREATE TRIGGER bill_log_trigger
-                AFTER INSERT OR UPDATE ON bills
-                FOR EACH ROW EXECUTE FUNCTION log_bill_changes();
-          
-                CREATE OR REPLACE FUNCTION log_web_bill_changes() RETURNS TRIGGER AS $$
-                BEGIN
-                  INSERT INTO web_bill_logs(bill_id, status) VALUES (NEW.web_bill_id, NEW.payment_status);
-                  RETURN NEW;
-                END;
-                $$ LANGUAGE plpgsql;
-          
-                CREATE TRIGGER web_bill_log_trigger
-                AFTER INSERT OR UPDATE ON web_bills
-                FOR EACH ROW EXECUTE FUNCTION log_web_bill_changes();
-          
-                CREATE OR REPLACE FUNCTION log_order_changes() RETURNS TRIGGER AS $$
-                BEGIN
-                  INSERT INTO order_logs(order_id, status) VALUES (NEW.order_id, NEW.status);
-                  RETURN NEW;
-                END;
-                $$ LANGUAGE plpgsql;
-          
-                CREATE TRIGGER order_log_trigger
-                AFTER INSERT OR UPDATE ON orders
-                FOR EACH ROW EXECUTE FUNCTION log_order_changes();
 
 
                 CREATE OR REPLACE FUNCTION log_accounts_payable_changes()
