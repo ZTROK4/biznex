@@ -44,7 +44,7 @@ router.post('/list_job', async (req, res) => {
         type, 
         work_type 
     } = req.body;
-
+    console.log(req.body);
     if (!jobtitle || !desc || !location || !salary || !company_name || !quali_1 || !quali_2 || !type || !work_type) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -71,7 +71,7 @@ router.post('/list_job', async (req, res) => {
                 work_type
             ) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING job_id;`,
-            [jobtitle, client_id, desc, location, salary, 'open', company_name, quali_1, quali_2, type, work_type]
+            [jobtitle, client_id, description, location, salary, 'open', company_name, quali_1, quali_2, type, work_type]
         );
 
         if (result.rows.length === 0) {
