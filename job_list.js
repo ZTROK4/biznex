@@ -35,7 +35,7 @@ router.use(async (req, res, next) => {
 router.post('/list_job', async (req, res) => {
     const { 
         jobtitle, 
-        desc, 
+        description, 
         location, 
         salary, 
         company_name, 
@@ -60,7 +60,7 @@ router.post('/list_job', async (req, res) => {
             `INSERT INTO job_list (
                 job_title, 
                 client_id, 
-                desc, 
+                description, 
                 location, 
                 salary_range, 
                 status, 
@@ -139,7 +139,7 @@ router.get('/get_jobs_with_applicants', async (req, res) => {
                 type, 
                 work_type, 
                 salary_range AS salary_per_month, 
-                desc AS description, 
+                description , 
                 quali_1, 
                 quali_2 
             FROM job_list 
