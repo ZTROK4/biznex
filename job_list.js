@@ -200,7 +200,6 @@ router.get('/get_jobs_with_applicants', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-;
 
 
 router.post('/update_application_status', async (req, res) => {
