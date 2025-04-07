@@ -375,24 +375,25 @@ router.get('/manual-transactions', async (req, res) => {
   router.get('/bills', async (req, res) => {
     try {
       const query = `
-        SELECT 
-          b.bill_id,
-          b.total_amount,
-          b.payment_status,
-          b.payment_method,
+      SELECT 
+        b.bill_id,
+        b.total_amount,
+        b.payment_status,
+        b.payment_method,
         TO_CHAR(b.generated_at, 'DD-MM-YYYY') AS generated_at,
-          b.cart_id,
-  
-          p.id AS product_id,
-          p.name AS product_name,
-          p.price AS product_price,
-          ci.quantity
-  
-        FROM bills b
-        JOIN cart_item ci ON b.cart_id = ci.cart_id
-        JOIN products p ON ci.product_id = p.id
-        ORDER BY b.generated_at DESC;
-      `;
+        b.cart_id,
+
+        p.id AS product_id,
+        p.name AS product_name,
+        p.price AS product_price,
+        ci.quantity
+
+      FROM bills b
+      JOIN cart_item ci ON b.cart_id = ci.cart_id
+      JOIN products p ON ci.product_id = p.id
+      ORDER BY b.generated_at DESC;
+    `;
+
   
       const result = await req.db.query(query);
   
