@@ -50,8 +50,8 @@ router.post('/list_job', async (req, res) => {
     }
 
     try {
-        const client_id = req.client_id;  
-
+        let client_id = req.client_id;  
+        
         if (!client_id) {
             return res.status(401).json({ error: "Unauthorized: Client not logged in" });
         }
@@ -124,7 +124,7 @@ router.post('/delete_job', async (req, res) => {
 router.get('/get_jobs_with_applicants', async (req, res) => {
     try {
         const client_id = req.client_id;
-
+        client_id=parseInt(client_id);
         console.log("cl:",client_id);
         if (!client_id) {
             return res.status(401).json({ error: "Unauthorized: User not logged in" });
