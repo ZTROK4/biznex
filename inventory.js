@@ -127,7 +127,11 @@ router.post('/delete-product', async (req, res) => {
     const { id } = req.body;
 
     try {
-        const result = await req.db.query('DELETE FROM products WHERE id = $1 RETURNING *', [id]);
+      const result = await req.db.query(
+        'UPDATE products SET deleted = true WHERE id = $1 RETURNING *',
+        [id]
+      );
+      
 
         if (result.rowCount === 0) {
         return res.status(404).json({ error: 'Product not found' });
@@ -145,7 +149,7 @@ router.post('/delete-product', async (req, res) => {
 
 router.get('/products', async (req, res) => {
     try {
-      const result = await req.db.query('SELECT * FROM products ORDER BY created_at DESC');
+      const result = await req.db.query('SELECT * FROM products WHERE deleted = false');
       res.status(200).json({ success: true, products: result.rows });
     } catch (error) {
       console.error('Error fetching products:', error);
