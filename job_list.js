@@ -14,7 +14,7 @@ router.use(async (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const client_id = decoded.id;  
-
+        client_id=parseInt(client_id);
         const result = await masterPool.query('SELECT client_id FROM clients WHERE client_id = $1', [client_id]);
 
         if (result.rows.length === 0) {
@@ -124,6 +124,7 @@ router.post('/delete_job', async (req, res) => {
 router.get('/get_jobs_with_applicants', async (req, res) => {
     try {
         const client_id = req.client_id;
+        client_id=parseInt(client_id);
         console.log("cl:",client_id);
         if (!client_id) {
             return res.status(401).json({ error: "Unauthorized: User not logged in" });
