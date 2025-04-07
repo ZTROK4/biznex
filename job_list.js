@@ -123,7 +123,7 @@ router.post('/delete_job', async (req, res) => {
 //  Get Job List
 router.get('/get_jobs_with_applicants', async (req, res) => {
     try {
-        const client_id = req.client_id;
+        let client_id = req.client_id;
         client_id=parseInt(client_id);
         console.log("cl:",client_id);
         if (!client_id) {
