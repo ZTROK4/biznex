@@ -45,7 +45,7 @@ router.post('/list_job', async (req, res) => {
         work_type 
     } = req.body;
     console.log(req.body);
-    if (!jobtitle || !desc || !location || !salary || !company_name || !quali_1 || !quali_2 || !type || !work_type) {
+    if (!jobtitle || !description || !location || !salary || !company_name || !quali_1 || !quali_2 || !type || !work_type) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
