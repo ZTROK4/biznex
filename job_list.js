@@ -162,11 +162,11 @@ router.get('/get_jobs_with_applicants', async (req, res) => {
                     ja.job_user_id,
                     ja.applied_at,
                     ja.status,
+                    ja.resume,
                     ju.job_user_name,
                     ju.email,
                     ju.phone,
                     ju.address,
-                    ju.resume,
                     ju.dob,
                     ju.image
                 FROM job_apply ja
