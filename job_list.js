@@ -121,85 +121,86 @@ router.post('/delete_job', async (req, res) => {
 });
 
 //  Get Job List
-router.get('/get_job_list', async (req, res) => {
+router.get('/get_jobs_with_applicants', async (req, res) => {
     try {
-        const client_id = req.client_id;  
+        const client_id = req.client_id;
 
         if (!client_id) {
             return res.status(401).json({ error: "Unauthorized: User not logged in" });
         }
 
-        const result = await masterPool.query(
-            `SELECT * FROM job_list WHERE client_id = $1;`,
+        const jobsResult = await masterPool.query(
+            `SELECT 
+                job_id, 
+                job_title, 
+                created_at AS posted_at, 
+                company_name, 
+                location, 
+                type, 
+                work_type, 
+                salary_range AS salary_per_month, 
+                desc AS description, 
+                quali_1, 
+                quali_2 
+            FROM job_list 
+            WHERE client_id = $1;`,
             [client_id]
         );
 
-        if (result.rows.length === 0) { 
+        if (jobsResult.rows.length === 0) {
             return res.status(404).json({ error: "No jobs found for this user" });
         }
 
-        return res.status(200).json({
-            message: "Jobs retrieved successfully",
-            jobs: result.rows
-        });
-    } catch (err) {
-        console.error('Error in retrieving jobs:', err);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
+        const jobs = jobsResult.rows;
 
-router.post('/get_job_applicants', async (req, res) => {
-    try {
-        const { job_id } = req.body;
-        const client_id = req.client_id; 
+        const jobsWithApplicants = await Promise.all(jobs.map(async (job) => {
+            const applicantsResult = await masterPool.query(
+                `SELECT 
+                    ja.job_apply_id,
+                    ja.job_id,
+                    ja.job_user_id,
+                    ja.applied_at,
+                    ja.status,
+                    ju.job_user_name,
+                    ju.email,
+                    ju.phone,
+                    ju.address,
+                    ju.resume,
+                    ju.dob,
+                    ju.image
+                FROM job_apply ja
+                INNER JOIN job_user ju ON ja.job_user_id = ju.job_user_id
+                WHERE ja.job_id = $1;`,
+                [job.job_id]
+            );
 
-        if (!job_id) {
-            return res.status(400).json({ error: 'Missing job_id' });
-        }
-
-        if (!client_id) {
-            return res.status(401).json({ error: 'Unauthorized: Client not logged in' });
-        }
-
-        const jobCheck = await masterPool.query(
-            `SELECT * FROM job_list WHERE job_id = $1 AND client_id = $2;`,
-            [job_id, client_id]
-        );
-
-        if (jobCheck.rows.length === 0) {
-            return res.status(404).json({ error: 'Job not found or unauthorized access' });
-        }
-
-        const applicants = await masterPool.query(
-            `SELECT 
-                ja.job_apply_id,
-                ja.job_id,
-                ja.job_user_id,
-                ja.applied_at,
-                ja.status,
-                ju.job_user_name,
-                ju.email,
-                ju.phone,
-                ju.address,
-                ju.resume,
-                ju.dob,
-                ju.image
-            FROM job_apply ja
-            INNER JOIN job_user ju ON ja.job_user_id = ju.job_user_id
-            WHERE ja.job_id = $1;`,
-            [job_id]
-        );
+            return {
+                job_id: job.job_id,
+                title: job.job_title,
+                posted_at: job.posted_at,
+                company: job.company_name,
+                location: job.location,
+                type: job.type,
+                work_type: job.work_type,
+                salary_per_month: job.salary_per_month,
+                description: job.description,
+                qualifications: `${job.quali_1}, ${job.quali_2}`,
+                applicants: applicantsResult.rows
+            };
+        }));
 
         return res.status(200).json({
-            message: 'Applicants retrieved successfully',
-            applicants: applicants.rows
+            message: 'Jobs and applicants retrieved successfully',
+            jobs: jobsWithApplicants
         });
 
     } catch (err) {
-        console.error('Error in fetching applicants:', err);
+        console.error('Error in retrieving jobs with applicants:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+;
+
 
 router.post('/update_application_status', async (req, res) => {
     try {

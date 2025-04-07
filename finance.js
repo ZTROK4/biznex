@@ -360,16 +360,7 @@ router.get('/manual-transactions', async (req, res) => {
     }
 });
 
-router.get('/web-bills', async (req, res) => {
-    try {
-      const query = 'SELECT * FROM web_bills ORDER BY generated_at DESC;';
-      const result = await req.db.query(query); // req.db must be the connected PostgreSQL client
-      res.status(200).json(result.rows);
-    } catch (error) {
-      console.error('Error fetching web bills:', error);
-      res.status(500).json({ error: 'Failed to fetch web bills' });
-    }
-  });
+
 
  /* router.get('/bills', async (req, res) => {
     try {
