@@ -96,11 +96,13 @@ router.get("/api/store", async (req, res) => {
 
 router.get("/products", async (req, res) => {
     try {
-      const query = `
+        const query = `
         SELECT * FROM products 
         WHERE status = 'Active' 
-          AND type IN ('Online', 'Both');
+          AND type IN ('Online', 'Hybrid')
+          AND deleted = false;
       `;
+      
       
       const { rows } = await req.db.query(query);
   
