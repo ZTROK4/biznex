@@ -171,9 +171,10 @@ router.get('/get_jobs_with_applicants', async (req, res) => {
                     ju.image
                 FROM job_apply ja
                 INNER JOIN job_user ju ON ja.job_user_id = ju.job_user_id
-                WHERE ja.job_id = $1;`,
+                WHERE ja.job_id = $1 AND ja.status = 'pending';`,
                 [job.job_id]
             );
+        
 
             return {
                 job_id: job.job_id,
