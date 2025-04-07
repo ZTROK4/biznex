@@ -447,30 +447,29 @@ router.get('/manual-transactions', async (req, res) => {
   router.get('/web-bills', async (req, res) => {
     try {
       const query = `
-      SELECT
-        wb.web_bill_id,
-        wb.total_amount,
-        wb.payment_status,
-        wb.payment_method,
-        TO_CHAR(wb.generated_at, 'DD-MM-YYYY') AS generated_at,
-        wb.order_id,
-        p.id AS product_id,
-        p.name AS product_name,
-        p.price AS product_price,
-        oi.quantity
-      FROM web_bills wb
-      JOIN order_item oi ON wb.order_id = oi.order_id
-      JOIN products p ON oi.product_id = p.id
-      ORDER BY wb.generated_at DESC;
-    `;
-
+        SELECT
+          wb.web_bill_id,
+          wb.total_amount,
+          wb.payment_status,
+          wb.payment_method,
+          TO_CHAR(wb.generated_at, 'DD-MM-YYYY') AS generated_at,
+          wb.order_id,
+          p.id AS product_id,
+          p.name AS product_name,
+          p.price AS product_price,
+          oi.quantity
+        FROM web_bills wb
+        JOIN order_item oi ON wb.order_id = oi.order_id
+        JOIN products p ON oi.product_id = p.id
+        ORDER BY wb.generated_at DESC;
+      `;
   
       const result = await req.db.query(query);
-      const webBillsMap = new Map();
   
-      for (const row of result.rows) {
-        console.log("Row:", row); // DEBUG HERE
+      // Group rows by web_bill_id
+      const groupedBills = {};
   
+      result.rows.forEach(row => {
         const {
           web_bill_id,
           order_id,
@@ -481,11 +480,11 @@ router.get('/manual-transactions', async (req, res) => {
           product_id,
           product_name,
           product_price,
-          quantity,
+          quantity
         } = row;
   
-        if (!webBillsMap.has(web_bill_id)) {
-          webBillsMap.set(web_bill_id, {
+        if (!groupedBills[web_bill_id]) {
+          groupedBills[web_bill_id] = {
             web_bill_id,
             order_id,
             total_amount,
@@ -493,20 +492,20 @@ router.get('/manual-transactions', async (req, res) => {
             payment_method,
             generated_at,
             products: []
-          });
+          };
         }
   
-        webBillsMap.get(web_bill_id).products.push({
+        groupedBills[web_bill_id].products.push({
           product_id,
           name: product_name,
           price: product_price,
           quantity
         });
-      }
+      });
   
-      res.status(200).json(Array.from(webBillsMap.values()));
+      res.status(200).json(Object.values(groupedBills));
     } catch (error) {
-      console.error('Error retrieving web bills with products:', error);
+      console.error('Error retrieving web bills with products:', error.message || error);
       res.status(500).json({ error: 'Failed to retrieve web bills' });
     }
   });
