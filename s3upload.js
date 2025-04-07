@@ -1,3 +1,5 @@
+const router = express.Router();
+
 router.get('/generate-upload-url', async (req, res) => {
   const { fileName, fileType, folder = 'uploads' } = req.query;
 
@@ -19,3 +21,6 @@ router.get('/generate-upload-url', async (req, res) => {
     res.status(500).json({ error: 'Failed to generate upload URL' });
   }
 });
+
+module.exports = router;
+
