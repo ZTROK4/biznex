@@ -374,6 +374,7 @@ router.get('/manual-transactions', async (req, res) => {
 
   router.get('/bills', async (req, res) => {
     try {
+      console.log("🔥 /bills endpoint called");
       const query = `
       SELECT 
         b.bill_id,
