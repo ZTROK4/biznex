@@ -83,26 +83,10 @@ const PORT = process.env.PORT || 5000;
 
 dotenv.config();
 
-const allowedOrigins = [
-  'http://localhost:5000',
-  'https://www.biznex.site',
-];
-
 const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // allow requests like curl or Postman
-    if (
-      allowedOrigins.includes(origin) ||
-      /^http:\/\/.*\.localhost:5000$/.test(origin) // regex for subdomains like foo.localhost:5000
-    ) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: ['http://localhost:5000','https://www.biznex.site','http://alan.localhost:5000'],
   credentials: true,
 };
-
 app.use(cors(corsOptions));
 app.use(express.json());
 
