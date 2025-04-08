@@ -98,13 +98,12 @@ router.post('/cart/checkout', async (req, res) => {
         );
 
         await req.db.query(
-            `INSERT INTO man_incomes (type, description, amount, payment_method, income_date)
-             VALUES ($1, $2, $3, $4, $5)`,
+            `INSERT INTO man_incomes (type, description, amount, income_date)
+             VALUES ($1, $2, $3, $4)`,
             [
                 'Sale',
                 `Bill for cart_id ${cartId}`,
                 totalPrice,
-                payment_method,
                 new Date() 
             ]
         );
