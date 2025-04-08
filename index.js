@@ -84,7 +84,7 @@ const PORT = process.env.PORT || 5000;
 dotenv.config();
 
 const corsOptions = {
-  origin: ['http://localhost:5000','https://www.biznex.site'],
+  origin: ['http://localhost:5000','https://www.biznex.site','http://*.localhost:5000'],
   credentials: true,
 };
 app.use(cors(corsOptions));
