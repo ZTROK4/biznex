@@ -126,4 +126,54 @@ router.post("/login", async (req, res) => {
     }
 });
 
+router.post("/register", async (req, res) => {
+    const subdomain = req.query.subdomain?.trim().toLowerCase();
+
+    if (!subdomain) {
+        console.warn("❌ No subdomain provided in query.");
+        return res.status(400).json({ error: "Subdomain is required." });
+    }
+
+    const { email, password } = req.body;
+
+    try {
+        // 1. Check if store exists for subdomain
+        const storeCheckQuery = "SELECT * FROM clients WHERE subdomain = $1";
+        const storeResult = await masterPool.query(storeCheckQuery, [subdomain]);
+
+        if (storeResult.rows.length === 0) {
+            console.warn(`❌ Store not found for subdomain: ${subdomain}`);
+            return res.status(404).json({ error: "Store not found." });
+        }
+
+        // 2. Check if email already in use
+        const emailCheckQuery = "SELECT * FROM customers WHERE email = $1 LIMIT 1";
+        const emailCheckResult = await masterPool.query(emailCheckQuery, [email]);
+
+        if (emailCheckResult.rows.length > 0) {
+            console.warn(`❌ Email already in use: ${email}`);
+            return res.status(409).json({ error: "Email already in use." });
+        }
+
+        // 3. Hash the password
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        // 4. Insert into DB
+        const insertQuery = "INSERT INTO customers(email, password_hash) VALUES($1, $2) RETURNING id, email";
+        const insertResult = await masterPool.query(insertQuery, [email, hashedPassword]);
+
+        res.json({
+            name: subdomain,
+            email: insertResult.rows[0].email,
+            description: `Welcome to ${subdomain}`,
+        });
+
+    } catch (error) {
+        console.error("❌ Database Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
 module.exports = router;
