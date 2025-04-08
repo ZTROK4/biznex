@@ -82,11 +82,23 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 dotenv.config();
+const allowedOrigins = [
+  'http://localhost:5000',
+  'https://www.biznex.site',
+  'http://alan.localhost:5000'
+];
 
 const corsOptions = {
-  origin: ['http://localhost:5000','https://www.biznex.site','http://alan.localhost:5000'],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true); // allow request
+    } else {
+      callback(new Error('Not allowed by CORS')); // block request
+    }
+  },
   credentials: true,
 };
+
 app.use(cors(corsOptions));
 app.use(express.json());
 
