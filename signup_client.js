@@ -238,7 +238,7 @@ router.post('/create-client', async (req, res) => {
                 CREATE TYPE salary_status AS ENUM ('pending', 'paid', 'failed');
                 CREATE TYPE payment_method_salary AS ENUM ('bank_transfer', 'cash', 'cheque', 'upi');
 
-               CREATE TABLE products (
+              CREATE TABLE products (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
                 description TEXT,
@@ -251,8 +251,10 @@ router.post('/create-client', async (req, res) => {
                 status VARCHAR(20) DEFAULT 'active',
                 bestseller BOOLEAN DEFAULT FALSE,
                 imageUrl TEXT,
-                type VARCHAR(50)
+                type VARCHAR(50),
+                deleted BOOLEAN DEFAULT FALSE
               );
+
 
 
                 CREATE TABLE category (
