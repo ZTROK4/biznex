@@ -321,19 +321,7 @@ router.post('/create-client', async (req, res) => {
           
                 
           
-                CREATE TABLE web_bills (
-                  web_bill_id SERIAL PRIMARY KEY,
-                  order_id INT NOT NULL,
-                  total_amount DECIMAL(10, 2) NOT NULL,
-                  payment_status web_bill_status,
-                  payment_method VARCHAR(50) CHECK (payment_method IN ('card', 'UPI', 'cash')),
-                  generated_at TIMESTAMP DEFAULT NOW(),
-                  CONSTRAINT fk_cart_web_bill FOREIGN KEY (cart_id) REFERENCES cart(cart_id)
-                );
-
-          
-              
-
+                
           
                 CREATE TABLE orders (
                   order_id SERIAL PRIMARY KEY,
@@ -353,6 +341,17 @@ router.post('/create-client', async (req, res) => {
                     CONSTRAINT fk_order FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
                     CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
                 );
+
+                CREATE TABLE web_bills (
+                  web_bill_id SERIAL PRIMARY KEY,
+                  order_id INT NOT NULL,
+                  total_amount DECIMAL(10, 2) NOT NULL,
+                  payment_status web_bill_status,
+                  payment_method VARCHAR(50) CHECK (payment_method IN ('card', 'UPI', 'cash')),
+                  generated_at TIMESTAMP DEFAULT NOW(),
+                  CONSTRAINT fk_order_web_bill FOREIGN KEY (order_id) REFERENCES orders(order_id)
+                );
+
 
 
                 CREATE TABLE documents (
