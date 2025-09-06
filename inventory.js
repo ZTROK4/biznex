@@ -65,7 +65,7 @@ router.post('/add-product', async (req, res) => {
 
         const result = await req.db.query(
             `INSERT INTO products 
-            (name, category, quantity, barcode, price, type, status,imageUrl) 
+            (name, category, quantity, barcode, price, type, status,imageurl) 
             VALUES ($1, $2, $3, $4, $5, $6, $7,$8) 
             RETURNING id, name, category, quantity, barcode, price, type, status, created_at`,
             [name, category, quantity, barcode, price, type, status,imageUrl]
