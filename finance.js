@@ -223,6 +223,7 @@ router.get('/accounts', async (req, res) => {
                     account_name,
                     amount,
                     TO_CHAR(due_date, 'DD/MM/YYYY') AS due_date,
+                    payment_method,
                     status
                 FROM accounts_receivable
                 ORDER BY created_at DESC;

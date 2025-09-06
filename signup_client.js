@@ -398,6 +398,7 @@ router.post('/create-client', async (req, res) => {
                   account_name VARCHAR(255) NOT NULL,
                   amount DECIMAL(10,2) NOT NULL,
                   due_date DATE NOT NULL,
+                  payment_method payment_method NOT NULL,
                   status payment_status DEFAULT 'Pending',
                   created_at TIMESTAMP DEFAULT NOW()
                 );
