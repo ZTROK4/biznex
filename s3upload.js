@@ -26,7 +26,6 @@ router.get('/generate-upload-url', async (req, res) => {
         Bucket: process.env.S3_BUCKET_NAME,
         Key: key,
         ContentType: fileType,
-        ACL: 'public-read',
     });
 
     try {
