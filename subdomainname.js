@@ -48,9 +48,7 @@ router.post('/subdomainin', async (req, res) => {
         const result = await masterPool.query(query, [client_id, subdomain]);
 
         return res.status(200).json({
-            message: 'Subdomain saved successfully',
-            client_id: result.rows[0].client_id,
-            subdomain: subdomain
+            message: 'Subdomain saved successfully'
         });
 
     } catch (error) {
