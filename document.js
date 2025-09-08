@@ -38,6 +38,7 @@ router.post('/create', async (req, res) => {
             VALUES ($1, $2, NOW())
             RETURNING document_id, file_url, description, created_at;
         `;
+        console.log('Document upload request received:', file_url, description);
 
         const values = [file_url, description];
 
@@ -61,6 +62,7 @@ router.get('/documents', async (req, res) => {
             FROM documents
             ORDER BY created_at DESC;
         `;
+        console.log('Documents returned');
 
         const result = await req.db.query(query);
 
