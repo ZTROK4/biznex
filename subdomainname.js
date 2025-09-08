@@ -38,11 +38,11 @@ router.post('/subdomainin', async (req, res) => {
         const { subdomain } = req.body;
 
         const query = `
-            INSERT INTO clients (client_id, subdomain)
-            VALUES ($1, $2)
-            ON CONFLICT (client_id) DO UPDATE
-            SET subdomain = EXCLUDED.subdomain
+            UPDATE clients
+            SET subdomain = $1
+            WHERE client_id = $2
             RETURNING client_id;
+
         `;
 
         const result = await masterPool.query(query, [client_id, subdomain]);
