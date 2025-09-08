@@ -39,8 +39,8 @@ router.post('/subdomainin', async (req, res) => {
 
         const query = `
             UPDATE clients
-            SET subdomain = $1
-            WHERE client_id = $2
+            SET subdomain = $2
+            WHERE client_id = $1
             RETURNING client_id;
 
         `;
