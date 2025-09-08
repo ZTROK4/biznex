@@ -156,6 +156,31 @@ router.get('/products', async (req, res) => {
       res.status(500).json({ error: 'Failed to fetch products' });
     }
   });
+
+router.get("/ecomproducts", async (req, res) => {
+    try {
+        const query = `
+        SELECT * FROM products 
+        WHERE status = 'Active' 
+          AND type IN ('Online', 'Hybrid')
+          AND deleted = false;
+      `;
+      
+      
+      const { rows } = await req.db.query(query);
+  
+      if (rows.length === 0) {
+        return res.status(404).json({ error: "Store data not found." });
+      }
+  
+      res.json(rows);
+  
+    } catch (error) {
+      console.error("❌ Database Error:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+  
   
 
 module.exports = router;
