@@ -157,7 +157,7 @@ router.get('/products', async (req, res) => {
     }
   });
 
-router.get("/ecomproducts", async (req, res) => {
+router.get('/ecomproducts', async (req, res) => {
     try {
         const query = `
         SELECT * FROM products 
