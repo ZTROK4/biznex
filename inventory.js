@@ -160,7 +160,7 @@ router.get('/products', async (req, res) => {
 router.get('/ecomproducts', async (req, res) => {
     try {
         const query = `
-        SELECT id,name,imageurl,quantity,category,price FROM products 
+        SELECT id,barcode,name,imageurl,quantity,category,price FROM products 
         WHERE status = 'Active' 
           AND type IN ('Online', 'Hybrid')
           AND deleted = false;
