@@ -23,7 +23,7 @@ const s3up =require('./s3upload');
 const billV= require('./bill');
 const subLog=require('./loginsub');
 const document=require('./document');
-const subname=rewuire('./subdomainname');
+const subname=require('./subdomainname');
 
 // JWT Middleware
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
