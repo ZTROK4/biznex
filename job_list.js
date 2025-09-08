@@ -248,26 +248,4 @@ router.post('/update_application_status', async (req, res) => {
     }
 });
 
-router.get('/subdomainname', async (req, res) => {
-    try {
-        const client_id = req.client_id;
-
-        const result = await masterPool.query(
-            'SELECT subdomain FROM clients WHERE client_id = $1',
-            [client_id]
-        );
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Client not found' });
-        }
-
-        const subdomain = result.rows[0].subdomain;
-
-        return res.status(200).json({ subdomain: subdomain });
-    } catch (error) {
-        console.error("Error fetching subdomain:", error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
 module.exports = router;

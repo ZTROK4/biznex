@@ -23,6 +23,7 @@ const s3up =require('./s3upload');
 const billV= require('./bill');
 const subLog=require('./loginsub');
 const document=require('./document');
+const subname=rewuire('./subdomainname');
 
 // JWT Middleware
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
@@ -122,6 +123,8 @@ app.use('/s3up',s3up);
 app.use('/bill',billV);
 app.use('/sublogin',subLog);
 app.use('/document',document);
+app.use('/subdomainname',subname);
+
 
 app.get('/protected', (req, res) => {
   const token = req.headers['authorization']?.split(' ')[1]; 
