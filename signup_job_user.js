@@ -178,7 +178,7 @@ async function hashPassword(password) {
   }
 
 router.post('/create-job-user', async (req, res) => {
-  const { username,email,address,dob,phone, password } = req.body;
+  const { username,email,address,city,dob,phone, password } = req.body;
   if (!username || !email || !password) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
@@ -195,8 +195,8 @@ router.post('/create-job-user', async (req, res) => {
     
     if(is_email_verified && is_phone_verified){
         const userResult = await masterPool.query(
-            'INSERT INTO job_user (job_user_name,address,dob, email, password_hash,phone) VALUES ($1, $2, $3) RETURNING id;',
-            [username,address,dob, email, hpassword,phone]
+            'INSERT INTO job_user (job_user_name,address,dob, email, password_hash,phone,city) VALUES ($1, $2, $3,$4,$5,$6,$7) RETURNING id;',
+            [username,address,dob, email, hpassword,phone,city]
         );
       
         const userId = userResult.rows[0].id;
