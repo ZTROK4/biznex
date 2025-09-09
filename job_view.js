@@ -58,7 +58,7 @@ router.get('/get_job_list', async (req, res) => {
 
 router.post('/apply_job', async (req, res) => {
     try {
-        const { job_id } = req.body;
+        const { job_id,fileurl } = req.body;
         const job_user_id = req.job_user_id; 
 
         if (!job_id) {
@@ -88,9 +88,9 @@ router.post('/apply_job', async (req, res) => {
         }
 
         await masterPool.query(
-            `INSERT INTO job_apply (job_id, job_user_id, applied_at, status) 
-             VALUES ($1, $2, NOW(), 'pending');`,
-            [job_id, job_user_id]
+            `INSERT INTO job_apply (job_id, job_user_id, applied_at, status,resume) 
+             VALUES ($1, $2, NOW(), 'pending',$3);`,
+            [job_id, job_user_id,fileurl]
         );
 
         return res.status(201).json({ message: 'Job application submitted successfully' });
