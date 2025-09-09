@@ -178,7 +178,7 @@ async function hashPassword(password) {
   }
 
 router.post('/create-job-user', async (req, res) => {
-  const { username,email,address,city,dob,phone, password } = req.body;
+  const { username,email,address,city,dob,phone, password} = req.body;
   if (!username || !email || !password) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
