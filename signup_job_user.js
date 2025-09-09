@@ -178,40 +178,54 @@ async function hashPassword(password) {
   }
 
 router.post('/create-job-user', async (req, res) => {
-  const { username,email,address,city,dob,phone, password} = req.body;
+  const { username, email, address, city, dob, phone, password } = req.body;
+
   if (!username || !email || !password) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
   try {
+    // Check if the email is in job_user_verifications
+    const verificationResult = await masterPool.query(
+      `SELECT * FROM job_user_verifications WHERE email = $1;`,
+      [email]
+    );
 
-    const result = await masterPool.query(`SELECT * FROM job_user_verifications WHERE email = $1;`, [email]);
-
-    if (result.rows.length === 0) return res.status(400).json({ error: "Invalid email." });
-
-    const { phone_otp, expires_at, is_phone_verified, is_email_verified } = result.rows[0];
-    
-    const hpassword= await hashPassword(password);
-    
-    if(is_email_verified && is_phone_verified){
-        const userResult = await masterPool.query(
-            'INSERT INTO job_user (job_user_name,address,dob, email, password_hash,phone,city) VALUES ($1, $2, $3,$4,$5,$6,$7);',
-            [username,address,dob, email, hpassword,phone,city]
-        );
-      
-
-        res.status(200).json({ message: 'SignUp successfull'});
-
+    if (verificationResult.rows.length === 0) {
+      return res.status(400).json({ error: "Invalid email." });
     }
-    else{
-        console.error('Email or phone not verified:', err);
+
+    const { phone_otp, expires_at, is_phone_verified, is_email_verified } = verificationResult.rows[0];
+
+    // Check if the email is already registered in job_user
+    const existingUserResult = await masterPool.query(
+      `SELECT * FROM job_user WHERE email = $1;`,
+      [email]
+    );
+
+    if (existingUserResult.rows.length > 0) {
+      return res.status(400).json({ error: "Email is already registered." });
     }
-    } 
-    catch (err) {
-        console.error('Error in signup:', err);
-        res.status(500).json({ error: 'Internal server error' });
+
+    const hpassword = await hashPassword(password);
+
+    if (is_email_verified && is_phone_verified) {
+      await masterPool.query(
+        'INSERT INTO job_user (job_user_name, address, dob, email, password_hash, phone, city) VALUES ($1, $2, $3, $4, $5, $6, $7);',
+        [username, address, dob, email, hpassword, phone, city]
+      );
+
+      return res.status(200).json({ message: 'Signup successful' });
+    } else {
+      return res.status(400).json({ error: 'Email or phone not verified' });
     }
+
+  } catch (err) {
+    console.error('Error in signup:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
+
 
 module.exports = router;
 
