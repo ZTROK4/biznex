@@ -195,7 +195,7 @@ router.post('/create-job-user', async (req, res) => {
     
     if(is_email_verified && is_phone_verified){
         const userResult = await masterPool.query(
-            'INSERT INTO job_user (job_user_name,address,dob, email, password_hash,phone,city) VALUES ($1, $2, $3,$4,$5,$6,$7) RETURNING id;',
+            'INSERT INTO job_user (job_user_name,address,dob, email, password_hash,phone,city) VALUES ($1, $2, $3,$4,$5,$6,$7);',
             [username,address,dob, email, hpassword,phone,city]
         );
       
