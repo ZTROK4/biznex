@@ -199,7 +199,6 @@ router.post('/create-job-user', async (req, res) => {
             [username,address,dob, email, hpassword,phone,city]
         );
       
-        const userId = userResult.rows[0].id;
 
         res.status(200).json({ message: 'SignUp successfull'});
 
