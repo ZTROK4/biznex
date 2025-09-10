@@ -546,7 +546,49 @@ router.get('/orders', async (req, res) => {
     } 
 
 });
+
+router.put('/update_payment', async (req, res) => {
+    try {
+        const { order_id, payment_status, order_status } = req.body;
+
+        if (!order_id || !payment_status || !order_status) {
+            return res.status(400).json({ error: 'order_id, payment_status, and order_status are required.' });
+        }
+
+        // Begin transaction
+
+        try {
+
+            // Update payment_status in web_bills
+            const updatePaymentQuery = `
+                UPDATE web_bills
+                SET payment_status = $1
+                WHERE order_id = $2
+            `;
+            await req.db.query(updatePaymentQuery, [payment_status, order_id]);
+
+            // Update order_status in orders
+            const updateOrderQuery = `
+                UPDATE orders
+                SET order_status = $1
+                WHERE order_id = $2
+            `;
+            await req.db.query(updateOrderQuery, [order_status, order_id]);
+
   
+            res.json({ message: 'Payment and order status updated successfully.' });
+        } catch (error) {
+            console.error('Transaction error:', error);
+            res.status(500).json({ error: 'Transaction failed. Changes rolled back.' });
+        } 
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+module.exports = router;
+
   
 
 
