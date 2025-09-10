@@ -126,6 +126,8 @@ router.post("/send-email-otp", async (req, res) => {
 // 📲 2. Send Phone OTP
 router.post("/send-phone-otp", async (req, res) => {
   const { email, phone } = req.body;
+  console.log(email);
+
   if (!email || !phone) return res.status(400).json({ error: "Email and phone are required" });
 
   try {
@@ -162,6 +164,7 @@ router.post("/send-phone-otp", async (req, res) => {
 // ✅ 3. Verify Email OTP
 router.post("/verify-email-otp", async (req, res) => {
   const { email, emailOtp } = req.body;
+  console.log(email);
   if (!email || !emailOtp) return res.status(400).json({ error: "Email and OTP are required." });
 
   try {
@@ -188,6 +191,8 @@ router.post("/verify-email-otp", async (req, res) => {
 // ✅ 4. Verify Phone OTP
 router.post("/verify-phone-otp", async (req, res) => {
   const { email, phoneOtp } = req.body;
+  console.log(email);
+
   if (!email || !phoneOtp) return res.status(400).json({ error: "Email and phone OTP are required." });
 
   try {
@@ -212,6 +217,7 @@ router.post("/verify-phone-otp", async (req, res) => {
 
 router.post('/create-user', async (req, res) => {
   const { username, email,phone, password } = req.body;
+    console.log(email);
 
   if (!username || !email || !password) {
     return res.status(400).json({ error: 'Missing required fields' });
