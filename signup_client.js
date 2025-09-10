@@ -429,45 +429,8 @@ router.post('/create-client', async (req, res) => {
                 );
 
 
-
-               CREATE TABLE users_verification (
-                  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                  email VARCHAR(255) UNIQUE,
-                  phone VARCHAR(20) UNIQUE,
-                  email_otp VARCHAR(10),
-                  phone_otp VARCHAR(10),
-                  is_email_verified BOOLEAN DEFAULT FALSE,
-                  is_phone_verified BOOLEAN DEFAULT FALSE,
-                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                  expires_at TIMESTAMP
-              );
-
-
-              CREATE TABLE users (
-                  user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                  email VARCHAR(255) UNIQUE NOT NULL,
-                  full_name VARCHAR(255),
-                  password_hash VARCHAR(255),
-                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                  is_active BOOLEAN DEFAULT TRUE
-              );
-
-
                 -- Trigger functions for logs
-                CREATE OR REPLACE FUNCTION delete_expired_otps()
-                RETURNS TRIGGER AS $$
-                BEGIN
-                    DELETE FROM users_verification
-                    WHERE created_at < NOW() - INTERVAL '10 minutes';
-                    RETURN NEW;
-                END;
-                $$ LANGUAGE plpgsql;
-
-                CREATE TRIGGER cleanup_expired_otps
-                AFTER INSERT ON users_verification
-                FOR EACH ROW
-                EXECUTE FUNCTION delete_expired_otps();
-
+          
 
 
                 CREATE OR REPLACE FUNCTION log_accounts_payable_changes()
