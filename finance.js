@@ -547,7 +547,7 @@ router.get('/orders', async (req, res) => {
 
 });
 
-router.put('/update_payment', async (req, res) => {
+router.put('/update_order_status', async (req, res) => {
     try {
         const { order_id, payment_status, order_status } = req.body;
 
