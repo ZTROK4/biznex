@@ -13,8 +13,8 @@ router.use(cors());
 
 router.use(async (req, res, next) => {
     try {
-        let subdomain = req.query.subdomain; 
-        
+        let lope = req.query.subdomain; 
+        let subdomain = lope.split('.')[0];
         if (!subdomain || subdomain.trim() === "" || subdomain === "www") {
             return res.status(400).json({ error: "Invalid or missing subdomain." });
         }
