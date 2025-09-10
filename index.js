@@ -85,18 +85,15 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 dotenv.config();
-const allowedOrigins = [
-  'http://localhost:5000',
-  'https://www.biznex.site',
-  'http://testdomain.localhost:5000'
-];
-
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true); // allow request
+    if (!origin) return callback(null, true); // allow Postman / server-to-server
+
+    const regex = /^http?:\/\/([a-zA-Z0-9-]+)\.localhost(:\d+)?$/;
+    if (regex.test(origin) || origin === 'http://localhost:5000' || origin === 'https://www.biznex.site') {
+      callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS')); // block request
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
