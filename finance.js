@@ -516,7 +516,7 @@ router.get('/orders', async (req, res) => {
 
     try {
         // First, get all orders
-        const ordersResult = await masterpool.query(
+        const ordersResult = await req.db.query(
             `SELECT order_id, total_price, status, created_at FROM orders ORDER BY created_at DESC`
         );
         const orders = ordersResult.rows;
