@@ -91,37 +91,39 @@ router.get("/api/store", async (req, res) => {
     }
 });
 
-
 router.post('/order/checkout', async (req, res) => {
     const client = await req.db.connect();
+
     try {
         const { status, items, bill } = req.body;
 
+        // Validate input
         if (!status || !Array.isArray(items) || items.length === 0 || !bill) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
         const { payment_status, payment_method } = bill;
 
+        // Calculate total price
         const totalPrice = items.reduce((sum, item) => {
             return sum + item.quantity * item.unit_price;
         }, 0);
 
         await client.query('BEGIN');
 
-        // 1. Create cart
-        const cartResult = await req.db.query(
+        // 1. Create order
+        const cartResult = await client.query(
             `INSERT INTO orders (total_price, status) VALUES ($1, $2) RETURNING order_id, created_at`,
             [totalPrice, status]
         );
-        const cartId = cartResult.rows[0].cart_id;
+        const cartId = cartResult.rows[0].order_id; // ✅ Fixed field name
 
         // 2. Loop through items
         for (const item of items) {
             const { product_id, quantity, unit_price } = item;
 
             // Check product stock
-            const stockResult = await req.db.query(
+            const stockResult = await client.query(
                 `SELECT quantity FROM products WHERE id = $1 FOR UPDATE`,
                 [product_id]
             );
@@ -138,39 +140,43 @@ router.post('/order/checkout', async (req, res) => {
                 return res.status(400).json({ error: `Insufficient stock for product ID ${product_id}` });
             }
 
-            // Insert cart item
-            await req.db.query(
+            // Insert into order_item
+            await client.query(
                 `INSERT INTO order_item (order_id, product_id, quantity, unit_price)
                  VALUES ($1, $2, $3, $4)`,
                 [cartId, product_id, quantity, unit_price]
             );
 
             // Decrement stock
-            await req.db.query(
+            await client.query(
                 `UPDATE products SET quantity = quantity - $1 WHERE id = $2`,
                 [quantity, product_id]
             );
         }
 
         // 3. Create bill
-        const billResult = await req.db.query(
+        const billResult = await client.query(
             `INSERT INTO web_bills (order_id, total_amount, payment_status, payment_method)
              VALUES ($1, $2, $3, $4) RETURNING *`,
             [cartId, totalPrice, payment_status, payment_method]
         );
 
-        await req.db.query(
+        // 4. Insert into man_incomes
+        await client.query(
             `INSERT INTO man_incomes (type, description, amount, income_date)
              VALUES ($1, $2, $3, $4)`,
             [
                 'Sale',
                 `Bill for order_id ${cartId}`,
                 totalPrice,
-                new Date() 
+                new Date()
             ]
         );
-        await req.db.query('COMMIT');
 
+        // Commit transaction
+        await client.query('COMMIT');
+
+        // Send response
         res.status(201).json({
             message: 'Checkout successful',
             cart: {
@@ -185,7 +191,7 @@ router.post('/order/checkout', async (req, res) => {
 
     } catch (error) {
         await client.query('ROLLBACK');
-        console.error(error);
+        console.error('Checkout error:', error);
         res.status(500).json({ error: 'Checkout failed', details: error.message });
     } finally {
         client.release();
