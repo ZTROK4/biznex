@@ -16,7 +16,8 @@ router.use(cors());
 
 router.use(async (req, res, next) => {
     try {
-        let subdomain = req.query.subdomain; 
+         let host = req.headers.host; // e.g., client1.example.com:5000
+        let subdomain = host.split('.')[0];
 
         if (!subdomain || subdomain.trim() === "" || subdomain === "www") {
             return res.status(400).json({ error: "Invalid or missing subdomain." });
