@@ -1,10 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const masterPool = require('./master_db');
-
 const jwt = require('jsonwebtoken');
 
-
+// Middleware: Verify JWT and user
 router.use(async (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1];
     if (!token) {
@@ -15,20 +14,23 @@ router.use(async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user_id = decoded.id;  
 
-        const result = await masterPool.query('SELECT job_user_id FROM job_user WHERE job_user_id = $1', [user_id]);
+        const result = await masterPool.query(
+            'SELECT job_user_id FROM job_user WHERE job_user_id = $1', 
+            [user_id]
+        );
 
         if (result.rows.length === 0) {
             return res.status(401).json({ error: 'Invalid user ID. Unauthorized access.' });
         }
 
         req.job_user_id = user_id; 
-
         next(); 
     } catch (error) {
         console.error("JWT verification error:", error);
         return res.status(401).json({ error: 'Invalid or expired token' });
     }
 });
+
 
 router.get('/get_job_list', async (req, res) => {
     try {
@@ -39,7 +41,15 @@ router.get('/get_job_list', async (req, res) => {
         }
 
         const result = await masterPool.query(
-            `SELECT * FROM job_list WHERE status = 'open';`
+            `SELECT jl.*
+             FROM job_list jl
+             WHERE jl.status = 'open'
+             AND jl.job_id NOT IN (
+                 SELECT job_id 
+                 FROM job_apply 
+                 WHERE job_user_id = $1
+             );`,
+            [user_id]
         );
 
         if (result.rows.length === 0) { 
