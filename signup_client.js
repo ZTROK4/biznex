@@ -228,7 +228,7 @@ router.post('/create-client', async (req, res) => {
                 CREATE TYPE cart_log_status AS ENUM ('Created', 'processing', 'shipped', 'delivered', 'cancelled');
                 CREATE TYPE bill_status AS ENUM ('paid', 'pending', 'failed');
                 CREATE TYPE bill_log_status AS ENUM ('generated', 'paid', 'refunded');
-                CREATE TYPE web_bill_status AS ENUM ('paid', 'pending', 'failed');
+                CREATE TYPE web_bill_status AS ENUM ('Paid', 'Pending', 'Failed');
                 CREATE TYPE web_bill_log_status AS ENUM ('generated', 'paid', 'refunded');
                 CREATE TYPE order_status AS ENUM ('pending', 'processing', 'completed', 'cancelled');
                 CREATE TYPE order_log_status AS ENUM ('created', 'processing', 'shipped', 'cancelled', 'delivered');
@@ -349,7 +349,7 @@ router.post('/create-client', async (req, res) => {
                   order_id INT NOT NULL,
                   total_amount DECIMAL(10, 2) NOT NULL,
                   payment_status web_bill_status,
-                  payment_method VARCHAR(50) CHECK (payment_method IN ('card', 'UPI', 'cash')),
+                  payment_method VARCHAR(50) CHECK (payment_method IN ('Card', 'UPI', 'Cash','Other')),
                   generated_at TIMESTAMP DEFAULT NOW(),
                   CONSTRAINT fk_order_web_bill FOREIGN KEY (order_id) REFERENCES orders(order_id)
                 );
