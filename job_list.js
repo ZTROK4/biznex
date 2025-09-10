@@ -206,13 +206,12 @@ router.get('/get_jobs_with_applicants', async (req, res) => {
 router.post('/update_application_status', async (req, res) => {
     try {
         const { job_apply_id, status } = req.body;
-        const client_id = req.client_id; // Extracted from JWT middleware
 
         if (!job_apply_id || !status) {
             return res.status(400).json({ error: 'Missing job_apply_id or status' });
         }
 
-        const validStatuses = ['pending', 'reviewed', 'accepted', 'rejected'];
+        const validStatuses = ['pending', 'reviewed','withdrawn', 'accepted', 'rejected'];
         if (!validStatuses.includes(status)) {
             return res.status(400).json({ error: 'Invalid status value' });
         }
@@ -226,8 +225,8 @@ router.post('/update_application_status', async (req, res) => {
             `SELECT ja.job_id 
              FROM job_apply ja 
              INNER JOIN job_list jl ON ja.job_id = jl.job_id 
-             WHERE ja.job_apply_id = $1 AND jl.client_id = $2;`,
-            [job_apply_id, client_id]
+             WHERE ja.job_apply_id = $1 ;`,
+            [job_apply_id]
         );
 
         if (jobCheck.rows.length === 0) {
