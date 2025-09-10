@@ -8,6 +8,9 @@ const bcrypt = require('bcrypt'); // Also required
 const router = express.Router();
 router.use(cors());
 
+
+
+
 router.use(async (req, res, next) => {
     try {
         let subdomain = req.query.subdomain; 
@@ -59,159 +62,34 @@ router.use(async (req, res, next) => {
     }
 });
 
-
-
-
-
-// API to fetch store data by subdomain
-router.get("/api/store", async (req, res) => {
-    const subdomain = req.query.subdomain?.trim().toLowerCase();
-
-    if (!subdomain) {
-        console.warn("❌ No subdomain provided in query.");
-        return res.status(400).json({ error: "Subdomain is required." });
+router.use(async (req, res, next) => {
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (!token) {
+        return res.status(400).json({ error: 'No token provided. Please log in first.' });
     }
 
     try {
-        const query = "SELECT email FROM clients WHERE subdomain = $1";
-        const { rows } = await masterPool.query(query, [subdomain]);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        let user_id = decoded.id;
+   
+        user_id=parseInt(user_id);
+        const result = await req.db.query('SELECT user_id FROM users WHERE user_id = $1', [user_id]);
 
-        if (rows.length === 0) {
-            console.warn(`❌ Store not found for subdomain: ${subdomain}`);
-            return res.status(404).json({ error: "Store not found." });
+        if (result.rows.length === 0) {
+
+            return res.status(401).json({ error: 'Invalid client ID. Unauthorized access.' });
         }
 
-        res.json({
-            name: subdomain,
-            email: rows[0].email,
-            description: `Welcome to ${subdomain}`,
-        });
+        req.user_id = user_id;
 
+        next();
     } catch (error) {
-        console.error("❌ Database Error:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        console.error("JWT verification error:", error);
+        return res.status(401).json({ error: 'Invalid or expired token' });
     }
 });
 
 
-
-router.post("/register", async (req, res) => {
-    const subdomain = req.query.subdomain?.trim().toLowerCase();
-
-    if (!subdomain) {
-        console.warn("❌ No subdomain provided in query.");
-        return res.status(400).json({ error: "Subdomain is required." });
-    }
-
-    const { email, password } = req.body;
-
-    try {
-        // 1. Check if store exists for subdomain
-        const storeCheckQuery = "SELECT * FROM clients WHERE subdomain = $1";
-        const storeResult = await masterPool.query(storeCheckQuery, [subdomain]);
-
-        if (storeResult.rows.length === 0) {
-            console.warn(`❌ Store not found for subdomain: ${subdomain}`);
-            return res.status(404).json({ error: "Store not found." });
-        }
-
-        // 2. Check if email already in use
-        const emailCheckQuery = "SELECT * FROM customers WHERE email = $1 LIMIT 1";
-        const emailCheckResult = await masterPool.query(emailCheckQuery, [email]);
-
-        if (emailCheckResult.rows.length > 0) {
-            console.warn(`❌ Email already in use: ${email}`);
-            return res.status(409).json({ error: "Email already in use." });
-        }
-
-        // 3. Hash the password
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        // 4. Insert into DB
-        const insertQuery = "INSERT INTO customers(email, password_hash) VALUES($1, $2) RETURNING id, email";
-        const insertResult = await masterPool.query(insertQuery, [email, hashedPassword]);
-
-        res.json({
-            name: subdomain,
-            email: insertResult.rows[0].email,
-            description: `Welcome to ${subdomain}`,
-        });
-
-    } catch (error) {
-        console.error("❌ Database Error:", error);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-});
-
-
-
-router.post("/login", async (req, res) => {
-    const subdomain = req.query.subdomain?.trim().toLowerCase();
-
-    if (!subdomain) {
-        console.warn("❌ No subdomain provided in query.");
-        return res.status(400).json({ error: "Subdomain is required." });
-    }
-
-    const { email, password } = req.body;
-
-    try {
-        // 1. Check if store exists
-        const storeQuery = "SELECT * FROM clients WHERE subdomain = $1";
-        const storeResult = await masterPool.query(storeQuery, [subdomain]);
-
-        if (storeResult.rows.length === 0) {
-            console.warn(`❌ Store not found for subdomain: ${subdomain}`);
-            return res.status(404).json({ error: "Store not found." });
-        }
-
-        // 2. Fetch user with email
-        const userQuery = "SELECT * FROM customers WHERE email = $1 LIMIT 1";
-        const userResult = await masterPool.query(userQuery, [email]);
-
-        if (userResult.rows.length === 0) {
-            console.warn(`❌ User not found with email: ${email}`);
-            return res.status(401).json({ error: "Invalid credentials." });
-        }
-
-        const user = userResult.rows[0];
-
-        // 3. Compare password
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if (!isMatch) {
-            console.warn(`❌ Incorrect password for email: ${email}`);
-            return res.status(401).json({ error: "Invalid credentials." });
-        }
-
-        // 4. Generate JWT Token
-        const tokenPayload = {
-            id: user.id,
-            email: user.email,
-            subdomain: subdomain,
-            dbname: storeResult.rows[0].db_name // Optional if used for dynamic DB routing
-        };
-
-        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
-            expiresIn: '7d'
-        });
-
-        // 5. Return response with token
-        res.json({
-            message: "Login successful",
-            token,
-            user: {
-                id: user.id,
-                email: user.email,
-            }
-        });
-
-    } catch (error) {
-        console.error("❌ Login Error:", error);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-});
 
 
 router.post('/order/checkout', async (req, res) => {
@@ -233,7 +111,7 @@ router.post('/order/checkout', async (req, res) => {
 
         // 1. Create cart
         const cartResult = await req.db.query(
-            `INSERT INTO order (total_price, status) VALUES ($1, $2) RETURNING order_id, created_at`,
+            `INSERT INTO orders (total_price, status) VALUES ($1, $2) RETURNING order_id, created_at`,
             [totalPrice, status]
         );
         const cartId = cartResult.rows[0].cart_id;
@@ -296,7 +174,7 @@ router.post('/order/checkout', async (req, res) => {
         res.status(201).json({
             message: 'Checkout successful',
             cart: {
-                order_id_id: cartId,
+                order_id: cartId,
                 status,
                 total_price: totalPrice,
                 created_at: cartResult.rows[0].created_at,

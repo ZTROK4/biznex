@@ -443,6 +443,7 @@ router.post('/create-client', async (req, res) => {
               CREATE TABLE users (
                   user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                   email VARCHAR(255) UNIQUE NOT NULL,
+                  phone VARCHAR(255) UNIQUE NOT NULL,
                   full_name VARCHAR(255),
                   password_hash VARCHAR(255),
                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -450,7 +451,7 @@ router.post('/create-client', async (req, res) => {
               );
 
 
-              
+
 
                 -- Trigger functions for logs
                 CREATE OR REPLACE FUNCTION delete_expired_otps()
