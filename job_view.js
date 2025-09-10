@@ -66,6 +66,45 @@ router.get('/get_job_list', async (req, res) => {
     }
 });
 
+router.get('/get_applied_jobs', async (req, res) => {
+    try {
+        const user_id = req.job_user_id; 
+
+        if (!user_id) {
+            return res.status(401).json({ error: "Unauthorized: User not logged in" });
+        }
+
+        const result = await masterPool.query(
+            `SELECT 
+                ja.job_id,
+                ju.job_user_name AS applicant_name,
+                jl.company_name,
+                jl.job_title,
+                ja.status AS application_status,
+                ja.applied_at
+             FROM job_apply ja
+             JOIN job_user ju ON ja.job_user_id = ju.job_user_id
+             JOIN job_list jl ON ja.job_id = jl.job_id
+             WHERE ja.job_user_id = $1
+             ORDER BY ja.applied_at DESC;`,
+            [user_id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "No applied jobs found" });
+        }
+
+        return res.status(200).json({
+            message: "Applied jobs retrieved successfully",
+            applied_jobs: result.rows
+        });
+    } catch (err) {
+        console.error('Error retrieving applied jobs:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
 router.post('/apply_job', async (req, res) => {
     try {
         const { job_id,fileurl } = req.body;
