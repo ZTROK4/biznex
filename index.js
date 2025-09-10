@@ -25,7 +25,7 @@ const subLog=require('./loginsub');
 const document=require('./document');
 const subname=require('./subdomainname');
 const signsub=require('./signupsub');
-
+const profileclient=require('./profileedit');
 // JWT Middleware
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
@@ -123,6 +123,8 @@ app.use('/sublogin',subLog);
 app.use('/document',document);
 app.use('/subdomainname',subname);
 app.use('/signsub',signsub);
+app.use('/profile/client/edit',profileclient);
+
 
 app.get('/protected', (req, res) => {
   const token = req.headers['authorization']?.split(' ')[1]; 
