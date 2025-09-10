@@ -87,18 +87,17 @@ router.get('/subdomainname', async (req, res) => {
 
 
 router.get('/orders', async (req, res) => {
-    const client = await req.db.connect();
 
     try {
         // First, get all orders
-        const ordersResult = await client.query(
+        const ordersResult = await req.db.query(
             `SELECT order_id, total_price, status, created_at FROM orders ORDER BY created_at DESC`
         );
         const orders = ordersResult.rows;
 
         // For each order, fetch its items
         for (let order of orders) {
-            const itemsResult = await client.query(
+            const itemsResult = await req.db.query(
                 `SELECT order_item_id, product_id, quantity, unit_price 
                  FROM order_item WHERE order_id = $1`,
                 [order.order_id]
@@ -118,10 +117,8 @@ router.get('/orders', async (req, res) => {
             message: 'Failed to retrieve orders',
             error: error.message
         });
-    } finally {
-        client.release();
-    }
-    
+    } 
+
 });
 
 
