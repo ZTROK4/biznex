@@ -76,8 +76,7 @@ router.get('/get_applied_jobs', async (req, res) => {
 
         const result = await masterPool.query(
             `SELECT 
-                ja.job_id,
-                ju.job_user_name AS applicant_name,
+                ja.job_apply_id,
                 jl.company_name,
                 jl.job_title,
                 ja.status AS application_status,
