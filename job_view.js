@@ -148,4 +148,45 @@ router.post('/apply_job', async (req, res) => {
     }
 });
 
+router.post('/update_application_status', async (req, res) => {
+    try {
+        const { job_apply_id, status } = req.body;
+
+        if (!job_apply_id || !status) {
+            return res.status(400).json({ error: 'Missing job_apply_id or status' });
+        }
+
+        const validStatuses = ['pending', 'reviewed','withdrawn', 'accepted', 'rejected'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ error: 'Invalid status value' });
+        }
+
+
+
+        // Ensure the job application exists and belongs to a job posted by the client
+        const jobCheck = await masterPool.query(
+            `SELECT ja.job_id 
+             FROM job_apply ja 
+             INNER JOIN job_list jl ON ja.job_id = jl.job_id 
+             WHERE ja.job_apply_id = $1 ;`,
+            [job_apply_id]
+        );
+
+        if (jobCheck.rows.length === 0) {
+            return res.status(404).json({ error: 'Application not found or unauthorized' });
+        }
+
+        // Update the job application status
+        await masterPool.query(
+            `UPDATE job_apply SET status = $1 WHERE job_apply_id = $2;`,
+            [status, job_apply_id]
+        );
+
+        return res.status(200).json({ message: 'Application status updated successfully' });
+
+    } catch (err) {
+        console.error('Error updating application status:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 module.exports = router;
