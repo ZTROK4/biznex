@@ -88,7 +88,7 @@ dotenv.config();
 const allowedOrigins = [
   'http://localhost:5000',
   'https://www.biznex.site',
-  'http://alan.localhost:5000'
+  'http://testdomain.localhost:5000'
 ];
 
 const corsOptions = {
