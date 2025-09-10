@@ -62,34 +62,34 @@ router.use(async (req, res, next) => {
     }
 });
 
-router.use(async (req, res, next) => {
-    const token = req.headers['authorization']?.split(' ')[1];
-    if (!token) {
-        return res.status(400).json({ error: 'No token provided. Please log in first.' });
+router.get("/api/store", async (req, res) => {
+    const subdomain = req.query.subdomain?.trim().toLowerCase();
+
+    if (!subdomain) {
+        console.warn("❌ No subdomain provided in query.");
+        return res.status(400).json({ error: "Subdomain is required." });
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        let user_id = decoded.id;
-   
-        user_id=parseInt(user_id);
-        const result = await req.db.query('SELECT user_id FROM users WHERE user_id = $1', [user_id]);
+        const query = "SELECT email FROM clients WHERE subdomain = $1";
+        const { rows } = await masterPool.query(query, [subdomain]);
 
-        if (result.rows.length === 0) {
-
-            return res.status(401).json({ error: 'Invalid client ID. Unauthorized access.' });
+        if (rows.length === 0) {
+            console.warn(`❌ Store not found for subdomain: ${subdomain}`);
+            return res.status(404).json({ error: "Store not found." });
         }
 
-        req.user_id = user_id;
+        res.json({
+            name: subdomain,
+            email: rows[0].email,
+            description: `Welcome to ${subdomain}`,
+        });
 
-        next();
     } catch (error) {
-        console.error("JWT verification error:", error);
-        return res.status(401).json({ error: 'Invalid or expired token' });
+        console.error("❌ Database Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
-
-
 
 
 router.post('/order/checkout', async (req, res) => {
