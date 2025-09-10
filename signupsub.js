@@ -58,6 +58,7 @@ router.use(async (req, res, next) => {
 
         req.clientId = clientId; 
         req.dbname = clientDbName; 
+        req.subdomain=subdomain;
 
         next();
     } catch (error) {
@@ -268,7 +269,7 @@ router.post('/create-user', async (req, res) => {
 
 
 router.post("/login", async (req, res) => {
-    const subdomain = req.query.subdomain?.trim().toLowerCase();
+    const subdomain = req.subdomain;
 
     if (!subdomain) {
         console.warn("❌ No subdomain provided in query.");
@@ -333,6 +334,5 @@ router.post("/login", async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
-// 🚀 Start the Express server
 
 module.exports = router;
