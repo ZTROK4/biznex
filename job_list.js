@@ -216,9 +216,7 @@ router.post('/update_application_status', async (req, res) => {
             return res.status(400).json({ error: 'Invalid status value' });
         }
 
-        if (!client_id) {
-            return res.status(401).json({ error: 'Unauthorized: Client not logged in' });
-        }
+
 
         // Ensure the job application exists and belongs to a job posted by the client
         const jobCheck = await masterPool.query(
