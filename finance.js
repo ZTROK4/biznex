@@ -521,7 +521,7 @@ router.get('/orders', async (req, res) => {
                     wb.payment_status
              FROM orders o
              JOIN users u ON o.user_id = u.user_id
-             LEFT JOIN web_bills wb ON o.order_id = wb.order_id::bigint
+             LEFT JOIN web_bills wb ON o.order_id = wb.order_id
              ORDER BY o.created_at DESC`
         );
 
@@ -531,9 +531,9 @@ router.get('/orders', async (req, res) => {
         for (let order of orders) {
             const itemsResult = await req.db.query(
                   `SELECT oi.order_item_id, oi.product_id, oi.quantity, oi.unit_price, p.name AS product_name
-                  FROM order_item oi
-                  JOIN products p ON oi.product_id = p.id
-                  WHERE oi.order_id::text = $1::text`,
+                   FROM order_item oi
+                   JOIN products p ON oi.product_id = p.id
+                   WHERE oi.order_id = $1`,
                   [order.order_id]
               );
 
@@ -554,6 +554,7 @@ router.get('/orders', async (req, res) => {
         });
     }
 });
+
 
 
 
