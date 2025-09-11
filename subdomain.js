@@ -77,7 +77,7 @@ router.use(async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user_id = decoded.id;
+        req.email = decoded.email;
         console.log("Decoded token:", decoded,'idddd',req.user_id);
         
         next();
@@ -121,11 +121,27 @@ router.post('/order/checkout', async (req, res) => {
     const client = await req.db.connect();
 
     try {
-        const {status, items, bill } = req.body;
-        const user_id=req.user_id;
+        const { status, items, bill } = req.body;
+        const userEmail = req.email; // assuming JWT middleware sets req.user
+
+        if (!userEmail) {
+            return res.status(401).json({ error: 'User not authenticated' });
+        }
+
+        // 1. Fetch user_id from email
+        const userResult = await client.query(
+            `SELECT user_id FROM users WHERE email = $1 LIMIT 1`,
+            [userEmail]
+        );
+
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const user_id = userResult.rows[0].user_id;
 
         // Validate input
-        if (!status || !Array.isArray(items) || items.length === 0 ||!user_id|| !bill) {
+        if (!status || !Array.isArray(items) || items.length === 0 || !bill) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
@@ -138,14 +154,14 @@ router.post('/order/checkout', async (req, res) => {
 
         await client.query('BEGIN');
 
-        // 1. Create order
+        // 2. Create order
         const cartResult = await client.query(
-            `INSERT INTO orders (user_id,total_price, status) VALUES ($1, $2,$3) RETURNING order_id, created_at`,
-            [user_id,totalPrice, status]
+            `INSERT INTO orders (user_id, total_price, status) VALUES ($1, $2, $3) RETURNING order_id, created_at`,
+            [user_id, totalPrice, status]
         );
-        const cartId = cartResult.rows[0].order_id; // ✅ Fixed field name
+        const cartId = cartResult.rows[0].order_id;
 
-        // 2. Loop through items
+        // 3. Loop through items
         for (const item of items) {
             const { product_id, quantity, unit_price } = item;
 
@@ -181,14 +197,14 @@ router.post('/order/checkout', async (req, res) => {
             );
         }
 
-        // 3. Create bill
+        // 4. Create bill
         const billResult = await client.query(
             `INSERT INTO web_bills (order_id, total_amount, payment_status, payment_method)
              VALUES ($1, $2, $3, $4) RETURNING *`,
             [cartId, totalPrice, payment_status, payment_method]
         );
 
-        // 4. Insert into man_incomes
+        // 5. Insert into man_incomes
         await client.query(
             `INSERT INTO man_incomes (type, description, amount, income_date)
              VALUES ($1, $2, $3, $4)`,
@@ -224,6 +240,7 @@ router.post('/order/checkout', async (req, res) => {
         client.release();
     }
 });
+
 
 router.get("/products", async (req, res) => {
     try {
