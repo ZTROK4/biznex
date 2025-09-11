@@ -238,6 +238,28 @@ router.post('/create-client', async (req, res) => {
                 CREATE TYPE salary_status AS ENUM ('pending', 'paid', 'failed');
                 CREATE TYPE payment_method_salary AS ENUM ('bank_transfer', 'cash', 'cheque', 'upi');
 
+                CREATE TABLE users_verification (
+                  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                  email VARCHAR(255) UNIQUE,
+                  phone VARCHAR(20) UNIQUE,
+                  email_otp VARCHAR(10),
+                  phone_otp VARCHAR(10),
+                  is_email_verified BOOLEAN DEFAULT FALSE,
+                  is_phone_verified BOOLEAN DEFAULT FALSE,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  expires_at TIMESTAMP
+              );
+
+
+              CREATE TABLE users (
+                  user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                  email VARCHAR(255) UNIQUE NOT NULL,
+                  phone VARCHAR(255) UNIQUE NOT NULL,
+                  full_name VARCHAR(255),
+                  password_hash VARCHAR(255),
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  is_active BOOLEAN DEFAULT TRUE
+              );
               CREATE TABLE products (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
@@ -429,28 +451,7 @@ router.post('/create-client', async (req, res) => {
                   changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                   operation_type VARCHAR(10) CHECK (operation_type IN ('INSERT', 'UPDATE', 'DELETE'))
                 );
-                 CREATE TABLE users_verification (
-                  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                  email VARCHAR(255) UNIQUE,
-                  phone VARCHAR(20) UNIQUE,
-                  email_otp VARCHAR(10),
-                  phone_otp VARCHAR(10),
-                  is_email_verified BOOLEAN DEFAULT FALSE,
-                  is_phone_verified BOOLEAN DEFAULT FALSE,
-                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                  expires_at TIMESTAMP
-              );
-
-
-              CREATE TABLE users (
-                  user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                  email VARCHAR(255) UNIQUE NOT NULL,
-                  phone VARCHAR(255) UNIQUE NOT NULL,
-                  full_name VARCHAR(255),
-                  password_hash VARCHAR(255),
-                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                  is_active BOOLEAN DEFAULT TRUE
-              );
+                 
 
 
 
