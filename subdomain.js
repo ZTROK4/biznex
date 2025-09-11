@@ -65,23 +65,26 @@ router.use(async (req, res, next) => {
 
 
 router.use(async (req, res, next) => {
-    const token = req.headers["authorization"]?.split(" ")[1]; 
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+
+    console.log("Authorization header:", authHeader);
+    console.log("Token received:", token);
+
     if (!token) {
-        return res.status(400).json({ error: "No token provided. Please log in first." });
+        return res.status(401).json({ error: "No token provided." });
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user_id = decoded.id; 
-
-        
-        next();  
+        console.log("Decoded token:", decoded);
+        req.user_id = decoded.id;
+        next();
     } catch (error) {
         console.error("JWT verification error:", error);
         return res.status(401).json({ error: "Invalid or expired token" });
     }
 });
-
 
 
 router.get("/api/store", async (req, res) => {
