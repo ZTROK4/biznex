@@ -67,7 +67,7 @@ router.use(async (req, res, next) => {
 router.use(async (req, res, next) => {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
-
+    
     console.log("Authorization header:", authHeader);
     console.log("Token received:", token);
 
@@ -77,8 +77,9 @@ router.use(async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log("Decoded token:", decoded);
         req.user_id = decoded.id;
+        console.log("Decoded token:", decoded,'idddd',req.user_id);
+        
         next();
     } catch (error) {
         console.error("JWT verification error:", error);
