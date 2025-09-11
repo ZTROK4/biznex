@@ -62,6 +62,28 @@ router.use(async (req, res, next) => {
     }
 });
 
+
+
+router.use(async (req, res, next) => {
+    const token = req.headers["authorization"]?.split(" ")[1]; 
+    if (!token) {
+        return res.status(400).json({ error: "No token provided. Please log in first." });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user_id = decoded.id; 
+
+        
+        next();  
+    } catch (error) {
+        console.error("JWT verification error:", error);
+        return res.status(401).json({ error: "Invalid or expired token" });
+    }
+});
+
+
+
 router.get("/api/store", async (req, res) => {
     const subdomain = req.query.subdomain?.trim().toLowerCase();
 
@@ -95,7 +117,8 @@ router.post('/order/checkout', async (req, res) => {
     const client = await req.db.connect();
 
     try {
-        const { user_id,status, items, bill } = req.body;
+        const {status, items, bill } = req.body;
+        const user_id=req.user_id;
 
         // Validate input
         if (!status || !Array.isArray(items) || items.length === 0 ||!user_id|| !bill) {
