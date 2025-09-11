@@ -36,7 +36,7 @@ router.post("/login-job-user", async (req, res) => {
       id: user.job_user_id, 
       email: user.email,
       userType: 'job_user'
-    }, JWT_SECRET, { expiresIn: '1h' });
+    }, JWT_SECRET, { expiresIn: '7d' });
 
     res.status(200).json({
       message: 'Login successful',
