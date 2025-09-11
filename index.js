@@ -89,15 +89,23 @@ const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) return callback(null, true); // allow Postman / server-to-server
 
-    const regex = /^http?:\/\/([a-zA-Z0-9-]+)\.localhost(:\d+)?$/;
-    if (regex.test(origin) || origin === 'http://localhost:5000' || origin === 'https://www.biznex.site') {
+    // Matches: http://subdomain.localhost:5000 or https://subdomain.localhost:5000
+    const regex = /^https?:\/\/([a-zA-Z0-9-]+)\.localhost(:\d+)?$/;
+
+    const allowedOrigins = [
+      'http://localhost:5000',
+      'https://www.biznex.site'
+    ];
+
+    if (regex.test(origin) || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
+  credentials: true, // required for cookies / Authorization headers
 };
+
 
 app.use(cors(corsOptions));
 app.use(express.json());
