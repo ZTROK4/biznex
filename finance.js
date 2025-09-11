@@ -515,9 +515,12 @@ router.get('/manual-transactions', async (req, res) => {
 router.get('/orders', async (req, res) => {
 
     try {
-        // First, get all orders
+        // First, get all orders with their payment status by joining web_bills
         const ordersResult = await req.db.query(
-            `SELECT order_id, total_price, status, created_at FROM orders ORDER BY created_at DESC`
+            `SELECT o.order_id, o.total_price, o.status, o.created_at, wb.payment_status
+             FROM orders o
+             LEFT JOIN web_bills wb ON o.order_id = wb.order_id
+             ORDER BY o.created_at DESC`
         );
         const orders = ordersResult.rows;
 
@@ -525,7 +528,8 @@ router.get('/orders', async (req, res) => {
         for (let order of orders) {
             const itemsResult = await req.db.query(
                 `SELECT order_item_id, product_id, quantity, unit_price 
-                 FROM order_item WHERE order_id = $1`,
+                 FROM order_item 
+                 WHERE order_id = $1`,
                 [order.order_id]
             );
             order.items = itemsResult.rows;
@@ -543,9 +547,10 @@ router.get('/orders', async (req, res) => {
             message: 'Failed to retrieve orders',
             error: error.message
         });
-    } 
+    }
 
 });
+
 
 router.put('/update_order_status', async (req, res) => {
     try {
