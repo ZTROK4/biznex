@@ -309,7 +309,7 @@ router.post("/login", async (req, res) => {
 
         // 4. Generate JWT Token
         const tokenPayload = {
-            id: user.id,
+            id: user.user_id,
             email: user.email,
             subdomain: subdomain,
             dbname: storeResult.rows[0].db_name // Optional if used for dynamic DB routing
@@ -324,7 +324,7 @@ router.post("/login", async (req, res) => {
             message: "Login successful",
             token,
             user: {
-                id: user.id,
+                id: user.user_id,
                 email: user.email,
             }
         });
