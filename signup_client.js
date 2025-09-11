@@ -31,7 +31,7 @@ const transporter = nodemailer.createTransport({
 
 const generateOTP = () => crypto.randomInt(100000, 999999).toString();
 
-//  1. Send Email OTP
+//  1. Send Email OTpp
 router.post("/send-email-otp", async (req, res) => {
   const { email} = req.body;
   if (!email) return res.status(400).json({ error: "Email is required" });
