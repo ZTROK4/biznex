@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken'); // Make sure this is at the top
 const bcrypt = require('bcrypt'); // Also required
 
 const router = express.Router();
-router.use(cors());
+
 
 
 
