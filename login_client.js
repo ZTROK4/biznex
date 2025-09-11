@@ -34,7 +34,7 @@ router.post("/login-client", async (req, res) => {
       email: user.email,
       dbname: user.db_name,
       userType: 'client'
-    }, JWT_SECRET, { expiresIn: '1h' });
+    }, JWT_SECRET, { expiresIn: '7d' });
 
     res.status(200).json({
       message: 'Login successful',
