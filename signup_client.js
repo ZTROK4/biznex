@@ -327,8 +327,10 @@ router.post('/create-client', async (req, res) => {
           
                 CREATE TABLE orders (
                   order_id SERIAL PRIMARY KEY,
+                  user_id INT NOT NULL,
                   total_price DECIMAL(10, 2) NOT NULL,
                   status order_status,
+                  CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users(user_id),
                   created_at TIMESTAMP DEFAULT NOW()
                 );
           

@@ -513,23 +513,27 @@ router.get('/manual-transactions', async (req, res) => {
   
   
 router.get('/orders', async (req, res) => {
-
     try {
-        // First, get all orders with their payment status by joining web_bills
+        // Get all orders with user details and payment status
         const ordersResult = await req.db.query(
-            `SELECT o.order_id, o.total_price, o.status, o.created_at, wb.payment_status
+            `SELECT o.order_id, o.total_price, o.status AS order_status, o.created_at, 
+                    u.full_name AS user_name, u.email AS user_email,
+                    wb.payment_status
              FROM orders o
+             JOIN users u ON o.user_id = u.user_id
              LEFT JOIN web_bills wb ON o.order_id = wb.order_id
              ORDER BY o.created_at DESC`
         );
+
         const orders = ordersResult.rows;
 
-        // For each order, fetch its items
+        // For each order, get its items with product name
         for (let order of orders) {
             const itemsResult = await req.db.query(
-                `SELECT order_item_id, product_id, quantity, unit_price 
-                 FROM order_item 
-                 WHERE order_id = $1`,
+                `SELECT oi.order_item_id, oi.product_id, oi.quantity, oi.unit_price, p.name AS product_name
+                 FROM order_item oi
+                 JOIN products p ON oi.product_id = p.id
+                 WHERE oi.order_id = $1`,
                 [order.order_id]
             );
             order.items = itemsResult.rows;
@@ -548,8 +552,8 @@ router.get('/orders', async (req, res) => {
             error: error.message
         });
     }
-
 });
+
 
 
 router.put('/update_order_status', async (req, res) => {

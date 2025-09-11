@@ -95,10 +95,10 @@ router.post('/order/checkout', async (req, res) => {
     const client = await req.db.connect();
 
     try {
-        const { status, items, bill } = req.body;
+        const { user_id,status, items, bill } = req.body;
 
         // Validate input
-        if (!status || !Array.isArray(items) || items.length === 0 || !bill) {
+        if (!status || !Array.isArray(items) || items.length === 0 ||!user_id|| !bill) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
@@ -113,8 +113,8 @@ router.post('/order/checkout', async (req, res) => {
 
         // 1. Create order
         const cartResult = await client.query(
-            `INSERT INTO orders (total_price, status) VALUES ($1, $2) RETURNING order_id, created_at`,
-            [totalPrice, status]
+            `INSERT INTO orders (user_id,total_price, status) VALUES ($1, $2,$3) RETURNING order_id, created_at`,
+            [user_id,totalPrice, status]
         );
         const cartId = cartResult.rows[0].order_id; // ✅ Fixed field name
 
